@@ -251,9 +251,9 @@ void output_type(unsigned char type) {
 }
 
 void output_arg(unsigned char arg, unsigned char type) {
-	if (type == VAL || type == REG || type == PTR) {
+	if (type == VAL || type == REG) {
 		printf("%d", arg);
-	} else if (type == STK) {
+	} else if (type == STK || type == PTR) {
 		if (arg > 26) {
 			printf("%c", arg + 97);
 		} else {

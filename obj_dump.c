@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 		count += 1;
 	}
 
-	for (int i = 0; i < count; i++) {
+	for (int i = count - 1; i >= 0; i--) {
 		output_function(functions[i]);
 	}
 

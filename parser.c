@@ -1,37 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-/* TYPES */
-#define VAL 0x00
-#define REG 0x01
-#define STK 0x02
-#define PTR 0x03
+#include "vm.h"
+#include "parser.h"
 
 /* TYPES STRINGS */
 #define S_VAL "VAL"
 #define S_REG "REG"
 #define S_STK "STK"
 #define S_PTR "PTR"
-
-/*LENGTHS IN BITS */
-#define LEN_TYPE 2
-#define LEN_OPCODE 3
-#define LEN_VALUE 8
-#define LEN_REG 3
-#define LEN_STK 5
-#define LEN_PRT 5
-#define LEN_INST 5
-#define LEN_LABEL 3
-
-/* OPCODES VALUE*/
-#define MOV 0x00
-#define CAL 0x01
-#define RET 0x02
-#define REF 0x03
-#define ADD 0x04
-#define PRINT 0x05
-#define NOT 0x06
-#define EQU 0x07
 
 /* OPCODES STRINGS*/
 #define S_MOV "MOV"
@@ -42,46 +18,6 @@
 #define S_PRINT "PRINT"
 #define S_NOT "NOT"
 #define S_EQU "EQU"
-
-/* NUMBER OF OPERATION ARGUMENTS */
-#define N_MOV 2
-#define N_CAL 1
-#define N_RET 0
-#define N_REF 2
-#define N_ADD 2
-#define N_PRINT 1
-#define N_NOT 1
-#define N_EQU 1
-
-
-#define MEM_SIZE 256
-#define BUF_SIZE 776
-#define MAX_INST 32
-#define MAX_FUNC 8
-
-unsigned char get_bit_range(unsigned char byte, int start_index, int range);
-unsigned char get_section(unsigned char *buf, int *index, int *bit_cursor, int range);
-unsigned char mask(int num_bits);
-struct Instruction read_instruction(unsigned char *buf, int *index, int *bit_cursor);
-int get_num_args(unsigned char op);
-int get_arg_len(unsigned char type);
-struct Function read_function(unsigned char *buf, int *index, int *bit_cursor);
-void output_function(struct Function f);
-
-
-
-struct Instruction {
-	int opcode;
-	int num_args;
-	// stored type then arg
-	unsigned char args[4];
-};
-
-struct Function {
-	int label;
-	int num_inst;
-	struct Instruction inst[MAX_INST];
-};
 
 int main(int argc, char **argv) {
 	struct Function functions[MAX_FUNC];

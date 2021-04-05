@@ -38,7 +38,6 @@
 #define N_EQU 1
 
 
-#define MEM_SIZE 256
 #define BUF_SIZE 776
 #define MAX_INST 32
 #define MAX_FUNC 8
@@ -49,7 +48,7 @@ struct Instruction {
 	int opcode;
 	int num_args;
 	// stored type then arg
-	unsigned char args[4];
+	BYTE args[4];
 };
 
 struct Function {

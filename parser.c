@@ -21,7 +21,7 @@
 
 int main(int argc, char **argv) {
 	struct Function functions[MAX_FUNC];
-	unsigned char buf[BUF_SIZE];
+	BYTE buf[BUF_SIZE];
 
 
 	char *file = argv[1];
@@ -42,9 +42,24 @@ int main(int argc, char **argv) {
 
 }
 
-struct Function read_function(unsigned char *buf, int *index, int *bit_cursor) {
+BYTE parse(FILE *fp, struct Function *pmem) {
+	BYTE buf[BUF_SIZE];
+	int bytes_read = fread(&buf[0], 1, BUF_SIZE, fp);
+	int index = bytes_read - 1;
+	int bit_cursor = 0;
+	
+	BYTE count = 0x00;
+	while (index > 0) {
+		pmem[count] = read_function(&buf[0], &index, &bit_cursor);
+		count += 0x01;
+	}
+
+	return count;
+}
+
+struct Function read_function(BYTE *buf, int *index, int *bit_cursor) {
 	struct Function f;
-	f.num_inst = get_section(buf, index, bit_cursor, 5);
+	f.num_inst = get_section(buf, index, bit_cursor, LEN_INST);
 	for (int i = f.num_inst - 1; i >= 0; i--) {
 		f.inst[i] = read_instruction(buf, index, bit_cursor);
 	}
@@ -52,9 +67,9 @@ struct Function read_function(unsigned char *buf, int *index, int *bit_cursor) {
 	return f;
 }
 
-struct Instruction read_instruction(unsigned char *buf, int *index, int *bit_cursor) {
+struct Instruction read_instruction(BYTE *buf, int *index, int *bit_cursor) {
 	struct Instruction inst;
-	inst.opcode = get_section(buf, index, bit_cursor, 3);
+	inst.opcode = get_section(buf, index, bit_cursor, LEN_OPCODE);
 	inst.num_args = get_num_args(inst.opcode); 
 	for (int i = 0; i < inst.num_args * 2; i+=2) {
 		inst.args[i] = get_section(buf, index, bit_cursor, LEN_TYPE);
@@ -65,15 +80,15 @@ struct Instruction read_instruction(unsigned char *buf, int *index, int *bit_cur
 	return inst;
 }
 
-unsigned char get_section(unsigned char *buf, int *index, int *bit_cursor, int num_bits) {
-	unsigned char current_byte = buf[*index];
-	unsigned char ret = 0;
+unsigned char get_section(BYTE *buf, int *index, int *bit_cursor, int num_bits) {
+	BYTE current_byte = buf[*index];
+	BYTE ret = 0;
 	if (*bit_cursor + num_bits < 8) {
 		ret = get_bit_range(current_byte, *bit_cursor, num_bits);
 	} else {
 		int r = (num_bits + *bit_cursor) % 8;
 		ret = get_bit_range(current_byte, *bit_cursor, num_bits - r);
-		unsigned char next_byte = buf[*index - 1];
+		BYTE next_byte = buf[*index - 1];
 		next_byte = get_bit_range(next_byte, 0, r) << (num_bits - r);
 		ret = ret + next_byte;
 		*index = *index - 1;
@@ -83,18 +98,18 @@ unsigned char get_section(unsigned char *buf, int *index, int *bit_cursor, int n
 	return ret;
 }
 
-unsigned char get_bit_range(unsigned char byte, int start_index, int range) {
+unsigned char get_bit_range(BYTE byte, int start_index, int range) {
 	byte = byte >> start_index;
 	byte = byte & mask(range);
 	return byte;
 }
 
 unsigned char mask(int num_bits) {
-	unsigned char full = 0xFF;
+	BYTE full = 0xFF;
 	return full >> (8 - num_bits);
 }
 
-int get_arg_len(unsigned char type) {
+int get_arg_len(BYTE type) {
 	switch (type) {
 		case (VAL):
 			return LEN_VALUE;
@@ -110,7 +125,7 @@ int get_arg_len(unsigned char type) {
 	}
 }
 
-int get_num_args(unsigned char op) {
+int get_num_args(BYTE op) {
 	switch (op) {
 		case (MOV):
 			return N_MOV;
@@ -166,7 +181,7 @@ void output_opcode(int op) {
 	}
 }
 
-void output_type(unsigned char type) {
+void output_type(BYTE type) {
 	switch (type) {
 		case (VAL):
 			printf("%s", S_VAL);
@@ -186,7 +201,7 @@ void output_type(unsigned char type) {
 	}
 }
 
-void output_arg(unsigned char arg, unsigned char type) {
+void output_arg(BYTE arg, BYTE type) {
 	if (type == VAL || type == REG) {
 		printf("%d", arg);
 	} else if (type == STK || type == PTR) {

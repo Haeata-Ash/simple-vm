@@ -1,5 +1,6 @@
 #ifndef PARSER_H_
 #define PARSER_H_
+#include <stdio.h>
 
 unsigned char get_bit_range(unsigned char byte, int start_index, int range);
 
@@ -16,5 +17,7 @@ int get_arg_len(unsigned char type);
 struct Function read_function(unsigned char *buf, int *index, int *bit_cursor);
 
 void output_function(struct Function f);
+
+unsigned char parse(FILE *fp, struct Function *pmem);
 
 #endif

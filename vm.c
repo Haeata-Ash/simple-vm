@@ -50,24 +50,31 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 		switch(pmem->inst[registers[PC]].opcode) {
 			case EQU:
+				printf("equ\n");
 				equ(pmem->inst[registers[PC]].args[1], registers);
 				break;
 			case NOT:
+				printf("not\n");
 				not(registers, pmem->inst[registers[PC]].args[1]);
 				break;
 			case PRINT:
+				printf("print\n");
 				print(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[registers[PC]].args[1]);
 				break;
 			case ADD:
+				printf("add\n");
 				add(registers, ram, pmem->inst[registers[PC]].args[1],pmem->inst[PC].args[3]);
 				break;
 			case REF:
+				printf("ref\n");
 				ref(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[registers[PC]].args[1], pmem->inst[registers[PC]].args[3]);
 				break;
 			case RET:
+				printf("ret\n");
 				ret(registers, ram);
 				break;
 			case CAL:
+				printf("cal\n");
 				call(pmem, registers, ram, pmem->inst[registers[PC]].args[1]);
 				break;
 			case MOV:

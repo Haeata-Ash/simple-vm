@@ -78,10 +78,6 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				continue;
 			case MOV:
 				printf("mov\n");
-				printf("B_type: %d\n", pmem->inst[PC].args[2]);
-				printf("B: %d\n", pmem->inst[PC].args[3]);
-				printf("A: %d\n", pmem->inst[PC].args[1]);
-				printf("atype: %d\n", pmem->inst[registers[PC]].args[0]);
 				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[3]);
 				break;
 			default:
@@ -151,9 +147,6 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 }
 
 void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
-	printf("B: %d\n", B);
-	printf("A: %d\n", A);
-	printf("atype: %d\n", A_type);
 	store(registers, ram, A_type, A, B);
 }
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {

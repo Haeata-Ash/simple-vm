@@ -91,6 +91,11 @@ unsigned char get_section(BYTE *buf, int *index, int *bit_cursor, int num_bits) 
 	} else {
 		int r = (num_bits + *bit_cursor) % 8;
 		ret = get_bit_range(current_byte, *bit_cursor, num_bits - r);
+		if (r == 0) {
+			*bit_cursor = (*bit_cursor + num_bits) % 8;
+			*index = *index - 1;
+			return ret;
+		}
 		BYTE next_byte = buf[*index - 1];
 		next_byte = get_bit_range(next_byte, 0, r) << (num_bits - r);
 		ret = ret + next_byte;

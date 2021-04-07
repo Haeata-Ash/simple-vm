@@ -45,15 +45,14 @@ void init_registers(BYTE *registers) {
 
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
-	for (int i = 0; i < pmem->num_inst; i++) {
-		printf("opcode: %d\n", pmem->inst[i].opcode);
-		printf("num_args: %d\n", pmem->inst[i].num_args);
-		for (int j = 0; j < pmem->inst[i].num_args; j++) {
-			printf("arg %d: %d\n", j, pmem->inst[i].args[j]);
+	while (registers[PC] < pmem->num_inst) {
+
+		printf("opcode: %d\n", pmem->inst[0].opcode);
+		printf("num_args: %d\n", pmem->inst[0].num_args);
+		for (int j = 0; j < pmem->inst[0].num_args; j++) {
+			printf("arg %d: %d\n", j, pmem->inst[0].args[j]);
 		}
 		printf("\n\n");
-	}
-	while (registers[PC] < pmem->num_inst) {
 
 		switch(pmem->inst[registers[PC]].opcode) {
 			case EQU:

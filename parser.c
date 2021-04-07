@@ -62,10 +62,10 @@ struct Function read_function(BYTE *buf, int *index, int *bit_cursor, struct PME
 	struct Function f;
 	f.num_inst = get_section(buf, index, bit_cursor, LEN_INST);
 	f.start = pmem->num_inst;
-	printf("%d\n", f.start);
 	for (int i = f.num_inst - 1; i >= 0; i--) {
 		pmem->inst[pmem->num_inst + i] = read_instruction(buf, index, bit_cursor);
 	}
+	pmem->num_inst += f.num_inst;
 	f.label = get_section(buf, index, bit_cursor, LEN_LABEL);
 	return f;
 }

@@ -46,32 +46,43 @@ void init_registers(BYTE *registers) {
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 	while (registers[PC] < pmem->num_inst) {
+		struct Instruction i = pmem->inst[registers[PC]];
 
-
-		switch(pmem->inst[registers[PC]].opcode) {
+		switch(i.opcode) {
 			case EQU:
-				equ(pmem->inst[registers[PC]].args[1], registers);
+				equ(i.args[1], registers);
 				break;
 			case NOT:
-				not(registers, pmem->inst[registers[PC]].args[1]);
+				not(registers, i.args[1]);
 				break;
 			case PRINT:
-				print(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[registers[PC]].args[1]);
+				print(registers, ram, i.args[0], i.args[1]);
 				break;
 			case ADD:
-				add(registers, ram, pmem->inst[registers[PC]].args[1],pmem->inst[PC].args[3]);
+				add(registers, ram, i.args[1], i.args[3]);
 				break;
 			case REF:
-				ref(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[registers[PC]].args[1], pmem->inst[registers[PC]].args[3]);
+				ref(registers,
+				    ram, 
+				    i.args[0], 
+				    i.args[1], 
+				    i.args[3]
+				);
 				break;
 			case RET:
 				ret(registers, ram);
 				break;
 			case CAL:
-				call(pmem, registers, ram, pmem->inst[registers[PC]].args[1]);
+				call(pmem, registers, ram, i.args[1]);
 				break;
 			case MOV:
-				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[registers[PC]].args[1], pmem->inst[registers[PC]].args[2], pmem->inst[registers[PC]].args[3]);
+				mov(registers,
+				    ram, 
+				    i.args[0], 
+				    i.args[1], 
+				    i.args[2], 
+				    i.args[3]
+				);
 				break;
 			default:
 				return 0;

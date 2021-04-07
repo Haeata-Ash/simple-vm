@@ -30,14 +30,14 @@ int main(int argc, char **argv) {
 	
 	//set program counter to 0
 	registers[PC] = 0x00;
-	//for (int i = 0; i < pmem.num_inst; i++) {
-	//	printf("opcode: %d\n", pmem.inst[i].opcode);
-	//	printf("num_args: %d\n", pmem.inst[i].num_args);
-	//	for (int j = 0; j < pmem.inst[i].num_args; j++) {
-	//		printf("arg %d: %d\n", j, pmem.inst[i].args[j]);
-	//	}
-	//	printf("\n");
-	//}
+	for (int i = 0; i < pmem.num_inst; i++) {
+		printf("opcode: %d\n", pmem.inst[i].opcode);
+		printf("num_args: %d\n", pmem.inst[i].num_args);
+		for (int j = 0; j < pmem.inst[i].num_args; j++) {
+			printf("arg %d: %d\n", j, pmem.inst[i].args[j]);
+		}
+		printf("\n\n");
+	}
 	run(&pmem, &ram[0], &registers[0]);
 
 

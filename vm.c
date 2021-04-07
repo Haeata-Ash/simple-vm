@@ -46,6 +46,7 @@ void init_registers(BYTE *registers) {
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 	while (registers[PC] < pmem->num_inst) {
+		printf("");
 
 
 		switch(pmem->inst[registers[PC]].opcode) {

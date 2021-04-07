@@ -140,8 +140,6 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 }
 
 void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
-	printf("A: %d\n", A);
-	printf("B: %d\n", B);
 	store(registers, ram, A_type, A, get_data(registers, ram, B_type, B));
 }
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {

@@ -76,7 +76,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 			case CAL:
 				printf("cal\n");
 				call(pmem, registers, ram, pmem->inst[registers[PC]].args[1]);
-				continue;
+				break;
 			case MOV:
 				printf("mov\n");
 				printf("%d\n", registers[PC]);

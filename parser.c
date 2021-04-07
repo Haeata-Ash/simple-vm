@@ -47,7 +47,7 @@ struct Function read_function(BYTE *buf, int *index, int *bit_cursor, struct PME
 struct Instruction read_instruction(BYTE *buf, int *index, int *bit_cursor) {
 	struct Instruction inst;
 	inst.opcode = get_section(buf, index, bit_cursor, LEN_OPCODE);
-	inst.num_args = get_num_args(inst.opcode); 
+	inst.num_args = get_num_args(inst.opcode) * 2; 
 	for (int i = 0; i < inst.num_args * 2; i+=2) {
 		inst.args[i] = get_section(buf, index, bit_cursor, LEN_TYPE);
 		int arg_len = get_arg_len(inst.args[i]);

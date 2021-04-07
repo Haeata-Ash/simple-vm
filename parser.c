@@ -208,7 +208,7 @@ void output_function(struct Function f, struct PMEM *pmem) {
 		inst = instructions[f.start + i];
 		if (inst.num_args == 0) {
 			output_opcode(inst.opcode);
-		} else if (inst.num_args == 1) {
+		} else if (inst.num_args == 2) {
 			output_opcode(inst.opcode);
 			printf(" ");
 			output_type(inst.args[0]);

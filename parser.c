@@ -48,7 +48,7 @@ struct Instruction read_instruction(BYTE *buf, int *index, int *bit_cursor) {
 	struct Instruction inst;
 	inst.opcode = get_section(buf, index, bit_cursor, LEN_OPCODE);
 	inst.num_args = get_num_args(inst.opcode) * 2; 
-	for (int i = 0; i < inst.num_args * 2; i+=2) {
+	for (int i = 0; i < inst.num_args; i+=2) {
 		inst.args[i] = get_section(buf, index, bit_cursor, LEN_TYPE);
 		int arg_len = get_arg_len(inst.args[i]);
 		inst.args[i + 1] = get_section(buf, index, bit_cursor, arg_len);

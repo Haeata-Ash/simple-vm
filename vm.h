@@ -94,7 +94,7 @@ int inc_PC(BYTE *registers);
 
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label);
 
-void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B);
+void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B);
 
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers);
 #endif

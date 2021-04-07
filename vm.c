@@ -30,14 +30,6 @@ int main(int argc, char **argv) {
 	
 	//set program counter to 0
 	registers[PC] = 0x00;
-	for (int i = 0; i < pmem.num_inst; i++) {
-		printf("opcode: %d\n", pmem.inst[i].opcode);
-		printf("num_args: %d\n", pmem.inst[i].num_args);
-		for (int j = 0; j < pmem.inst[i].num_args; j++) {
-			printf("arg %d: %d\n", j, pmem.inst[i].args[j]);
-		}
-		printf("\n\n");
-	}
 	run(&pmem, &ram[0], &registers[0]);
 
 
@@ -52,6 +44,15 @@ void init_registers(BYTE *registers) {
 }
 
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
+
+	for (int i = 0; i < pmem->num_inst; i++) {
+		printf("opcode: %d\n", pmem->inst[i].opcode);
+		printf("num_args: %d\n", pmem->inst[i].num_args);
+		for (int j = 0; j < pmem->inst[i].num_args; j++) {
+			printf("arg %d: %d\n", j, pmem->inst[i].args[j]);
+		}
+		printf("\n\n");
+	}
 	while (registers[PC] < pmem->num_inst) {
 
 		switch(pmem->inst[registers[PC]].opcode) {
@@ -85,7 +86,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				continue;
 			case MOV:
 				printf("mov\n");
-				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[3]);
+				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[2], pmem->inst[PC].args[3]);
 				break;
 			default:
 				return 0;
@@ -153,10 +154,10 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 	}
 }
 
-void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
+void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	printf("A: %d\n", A);
 	printf("B: %d\n", B);
-	store(registers, ram, A_type, A, B);
+	store(registers, ram, A_type, A, get_data(registers, ram, B_type, B));
 }
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 	push(registers, ram, registers[FP]);

@@ -37,37 +37,37 @@ int main(int argc, char **argv) {
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	while (registers[PC] < pmem->num_inst) {
 
-		switch(pmem->inst[PC].opcode) {
+		switch(pmem->inst[registers[PC]].opcode) {
 			case EQU:
-				equ(pmem->inst[PC].args[1], registers);
+				equ(pmem->inst[registers[PC]].args[1], registers);
 				break;
 			case NOT:
-				not(registers, pmem->inst[PC].args[1]);
+				not(registers, pmem->inst[registers[PC]].args[1]);
 				break;
 			case PRINT:
-				print(registers, ram, pmem->inst[PC].args[0], pmem->inst[PC].args[1]);
+				print(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[registers[PC]].args[1]);
 				break;
 			case ADD:
-				add(registers, ram, pmem->inst[PC].args[1],pmem->inst[PC].args[3]);
+				add(registers, ram, pmem->inst[registers[PC]].args[1],pmem->inst[PC].args[3]);
 				break;
 			case REF:
-				ref(registers, ram, pmem->inst[PC].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[3]);
+				ref(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[registers[PC]].args[1], pmem->inst[registers[PC]].args[3]);
 				break;
 			case RET:
 				ret(registers, ram);
 				break;
 			case CAL:
-				call(pmem, registers, ram, pmem->inst[PC].args[1]);
-				break;
+				call(pmem, registers, ram, pmem->inst[registers[PC]].args[1]);
+				continue;
 			case MOV:
-				mov(registers, ram, pmem->inst[PC].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[2]);
+				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[2]);
 				break;
 			default:
 				return 0;
+		}
 
-			if (!inc_PC(registers)) {
-				return 0;
-			}
+		if (!inc_PC(registers)) {
+			return 0;
 		}
 	}
 	return 1;
@@ -181,6 +181,9 @@ void equ(BYTE reg_addr, BYTE *ptr_reg) {
 
 
 int inc_PC(BYTE *registers) {
+	if (registers[PC] == MEM_SIZE - 1) {
+		return 0;
+	}
 	registers[PC] += 1;
 	return 1;
 }
@@ -190,7 +193,7 @@ void set_PC(BYTE *ptr_reg, BYTE addr) {
 }
 
 BYTE pop(BYTE *registers, BYTE *ram) {
-	if (registers[SP] < MEM_SIZE) {
+	if (registers[SP] < MEM_SIZE - 1 ) {
 		registers[SP] += 1;
 		return ram[registers[SP] - 1];
 	} 

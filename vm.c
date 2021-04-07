@@ -77,6 +77,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				continue;
 			case MOV:
 				printf("mov\n");
+				printf("B_type: %d\n", pmem->inst[PC].args[2]);
 				printf("B: %d\n", pmem->inst[PC].args[3]);
 				printf("A: %d\n", pmem->inst[PC].args[1]);
 				printf("atype: %d\n", pmem->inst[registers[PC]].args[0]);

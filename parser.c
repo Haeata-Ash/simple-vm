@@ -20,7 +20,8 @@
 #define S_EQU "EQU"
 
 int main(int argc, char **argv) {
-	struct Function functions[MAX_FUNC];
+	struct PMEM pmem;
+	pmem.num_inst = 0;
 	BYTE buf[BUF_SIZE];
 
 
@@ -30,19 +31,19 @@ int main(int argc, char **argv) {
 	int index = bytes_read - 1;
 	int bit_cursor = 0;
 	
-	int count = 0;
+	pmem.num_functions = 0;
 	while (index > 0) {
-		functions[count] = read_function(&buf[0], &index, &bit_cursor);
-		count += 1;
+		pmem.functions[pmem.num_functions] = read_function(&buf[0], &index, &bit_cursor, &pmem);
+		pmem.num_functions += 1;
 	}
 
-	for (int i = count - 1; i >= 0; i--) {
-		output_function(functions[i]);
+	for (int i = pmem.num_functions - 1; i >= 0; i--) {
+		output_function(pmem.functions[i], &pmem);
 	}
 
 }
 
-BYTE parse(FILE *fp, struct Function *pmem) {
+BYTE parse(FILE *fp, struct PMEM *pmem) {
 	BYTE buf[BUF_SIZE];
 	int bytes_read = fread(&buf[0], 1, BUF_SIZE, fp);
 	int index = bytes_read - 1;
@@ -50,18 +51,19 @@ BYTE parse(FILE *fp, struct Function *pmem) {
 	
 	BYTE count = 0x00;
 	while (index > 0) {
-		pmem[count] = read_function(&buf[0], &index, &bit_cursor);
+		pmem->functions[count] = read_function(&buf[0], &index, &bit_cursor, pmem);
 		count += 0x01;
 	}
 
 	return count;
 }
 
-struct Function read_function(BYTE *buf, int *index, int *bit_cursor) {
+struct Function read_function(BYTE *buf, int *index, int *bit_cursor, struct PMEM *pmem) {
 	struct Function f;
 	f.num_inst = get_section(buf, index, bit_cursor, LEN_INST);
+	f.start = pmem->num_inst;
 	for (int i = f.num_inst - 1; i >= 0; i--) {
-		f.inst[i] = read_instruction(buf, index, bit_cursor);
+		pmem->inst[pmem->num_inst + i] = read_instruction(buf, index, bit_cursor);
 	}
 	f.label = get_section(buf, index, bit_cursor, LEN_LABEL);
 	return f;
@@ -217,12 +219,13 @@ void output_arg(BYTE arg, BYTE type) {
 
 
 
-void output_function(struct Function f) {
+void output_function(struct Function f, struct PMEM *pmem) {
 	printf("FUNC LABEL %d\n", f.label);
+	struct Instruction *instructions = pmem->inst;
 	struct Instruction inst;
 	for (int i = 0; i < f.num_inst; i++) {
 		printf("    ");
-		inst = f.inst[i];
+		inst = instructions[f.start + i];
 		if (inst.num_args == 0) {
 			output_opcode(inst.opcode);
 		} else if (inst.num_args == 1) {

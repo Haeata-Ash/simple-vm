@@ -54,7 +54,24 @@ struct Instruction {
 struct Function {
 	int label;
 	int num_inst;
-	struct Instruction inst[MAX_INST];
+	int start;
 };
+
+struct PMEM {
+	struct Instruction inst[256];
+	struct Function functions[MAX_FUNC];
+	int num_functions;
+	int num_inst;
+};
+
+typedef void (*store)(BYTE *, BYTE , BYTE);
+
+void store_reg(BYTE *registers, BYTE reg, BYTE val);
+
+void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val);
+
+BYTE pop(BYTE *registers, BYTE *ram);
+
+void push(BYTE *registers, BYTE *ram, BYTE val);
 
 #endif

@@ -14,10 +14,10 @@ int get_num_args(unsigned char op);
 
 int get_arg_len(unsigned char type);
 
-struct Function read_function(unsigned char *buf, int *index, int *bit_cursor);
+struct Function read_function(unsigned char *buf, int *index, int *bit_cursor, struct PMEM *pmem);
 
-void output_function(struct Function f);
+void output_function(struct Function f, struct PMEM *pmem);
 
-unsigned char parse(FILE *fp, struct Function *pmem);
+unsigned char parse(FILE *fp, struct PMEM *pmem);
 
 #endif

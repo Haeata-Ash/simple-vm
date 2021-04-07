@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
 
 	BYTE ram[MEM_SIZE];
 	BYTE registers[NUM_REG];
+	init_registers(&registers[0]);
 
 	//read in program to pmem
 	char *file = argv[1];
@@ -32,6 +33,14 @@ int main(int argc, char **argv) {
 	run(&pmem, &ram[0], &registers[0]);
 
 
+}
+
+void init_registers(BYTE *registers) {
+	for (registers[GEN] = 0; registers[GEN] < 8; registers[GEN]++) {
+		if (!(registers[GEN] == GEN)) {
+			registers[registers[GEN]] = 0;
+		}
+	}
 }
 
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {

@@ -64,6 +64,8 @@ struct PMEM {
 	int num_inst;
 };
 
+void init_registers(BYTE *registers);
+
 void store_reg(BYTE *registers, BYTE reg, BYTE val);
 
 void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val);

@@ -181,11 +181,8 @@ void equ(BYTE reg_addr, BYTE *ptr_reg) {
 
 
 int inc_PC(BYTE *registers) {
-	if (PC >= 0 && PC <MEM_SIZE) {
-		registers[PC] += 1;
-		return 1;
-	}
-	return 0;
+	registers[PC] += 1;
+	return 1;
 }
 
 void set_PC(BYTE *ptr_reg, BYTE addr) {

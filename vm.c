@@ -10,50 +10,89 @@
 #define FP 5 // points to start of current frame
 #define GEN 4 // for random shit
 
-struct PMEM {
-	struct Function *functions;
-	int num_functions;
-};
-
-struct Memory {
-	struct PMEM *pmem;
-	BYTE *ram;
-	BYTE *registers;
-};
-
 
 int main(int argc, char **argv) {
 	struct PMEM pmem;
-	struct Function functions[MAX_FUNC];
-	pmem.functions = &functions[0];
+	pmem.num_inst = 0;
+	pmem.num_functions = 0;
+
 	BYTE ram[MEM_SIZE];
 	BYTE registers[NUM_REG];
-	BYTE *ptr_ram = &ram[0];
-	BYTE *ptr_reg = &registers[0];
 
 	//read in program to pmem
 	char *file = argv[1];
 	FILE *fp = fopen(file, "rb");
-	pmem.num_functions = parse(fp, pmem.functions);
+	parse(fp, &pmem);
 
 	//set stack pointer to 255
 	registers[SP] = 0xFF;
 	
 	//set program counter to 0
 	registers[PC] = 0x00;
+	run(&pmem, &ram[0], &registers[0]);
 
 
 }
 
-int run(struct PMEM pmem, BYTE *ram, BYTE *registers) {
+int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
+	while (registers[PC] < pmem->num_inst) {
 
-	
+		switch(pmem->inst[PC].opcode) {
+			case EQU:
+				equ(pmem->inst[PC].args[1], registers);
+				break;
+			case NOT:
+				not(registers, pmem->inst[PC].args[1]);
+				break;
+			case PRINT:
+				print(registers, ram, pmem->inst[PC].args[0], pmem->inst[PC].args[1]);
+				break;
+			case ADD:
+				add(registers, ram, pmem->inst[PC].args[1],pmem->inst[PC].args[3]);
+				break;
+			case REF:
+				ref(registers, ram, pmem->inst[PC].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[3]);
+				break;
+			case RET:
+				ret(registers, ram);
+				break;
+			case CAL:
+				call(pmem, registers, ram, pmem->inst[PC].args[1]);
+				break;
+			case MOV:
+				mov(registers, ram, pmem->inst[PC].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[2]);
+				break;
+			default:
+				return 0;
+
+			if (!inc_PC(registers)) {
+				return 0;
+			}
+		}
+	}
 	return 1;
 }
 
 
 BYTE get_stk_sym_addr(BYTE *registers, BYTE stk_sym) {
 	return registers[FP] + stk_sym;
+}
+
+void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
+	switch (A_type) {
+		case REG:
+			store_reg(registers, A, B);
+			return;
+		case STK:
+			store_stk(registers, ram, registers[FP] - A, B);
+			return;
+		case PTR:
+			store_stk(registers, ram, access_stk_sym(registers, ram, A), B);
+			return;
+		default:
+			return;
+
+	}
 }
 
 
@@ -75,11 +114,31 @@ BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 	return ram[access_stk_sym(registers, ram, stk_sym)];
 }
-void call(BYTE *registers, BYTE *ram, BYTE label) {
+
+BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
+	switch (type) {
+		case PTR:
+			return deref_ptr(registers, ram, A);
+		case STK:
+			return access_stk_sym(registers, ram, A);
+		case REG:
+			return registers[A];
+		default:
+			return A;
+	}
+}
+
+void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
+	store(registers, ram, A_type, A, B);
+}
+void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 	push(registers, ram, registers[FP]);
 	push(registers, ram, registers[PC]);
-	registers[PC] = instr_map[label];
-
+	for (registers[GEN] = 0; registers[GEN] < pmem->num_functions; registers[GEN] += 1) {
+		if (label == pmem->functions[registers[GEN]].label) {
+			registers[PC] = pmem->functions[registers[GEN]].start;
+		}
+	}
 }
 void ret(BYTE *registers, BYTE *stk) {
 	registers[GEN] = registers[FP] - registers[SP];
@@ -104,8 +163,8 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 void add(BYTE *registers, BYTE *ram, BYTE A, BYTE B) {
 	store_reg(registers, A, registers[A] + registers[B]);
  }
-void print(BYTE *storage, BYTE addr) {
-	printf("%d\n", storage[addr]);
+void print(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
+	printf("%d\n", get_data(registers, ram, type, A));
 }
 
 void not(BYTE *registers, BYTE reg_addr) {
@@ -120,33 +179,31 @@ void equ(BYTE reg_addr, BYTE *ptr_reg) {
 	}
 }
 
-BYTE current_func(BYTE *ptr_reg) {
-	return ptr_reg[PC] & mask(LEN_OPCODE);
-}
 
-BYTE current_inst(BYTE *ptr_reg) {
-	return (ptr_reg[PC] >> LEN_OPCODE) & mask(LEN_INST);
-}
-
-
-
-
-void inc_PC(BYTE *ptr_reg, struct Function *pmem) {
-	ptr_reg[GEN] = ptr_reg[PC] & mask(LEN_OPCODE);
-
-	if (pmem[ptr_reg[GEN]].num_inst > ((ptr_reg[PC] >> LEN_OPCODE) & mask(LEN_INST))) {
-		ptr_reg[GEN] = ptr_reg[PC] >> LEN_OPCODE;
-		ptr_reg[GEN] += 0x01;
-		ptr_reg[GEN] <<= LEN_OPCODE;
-		ptr_reg[GEN] += ptr_reg[PC] & mask(LEN_OPCODE);
-		ptr_reg[PC] = ptr_reg[GEN];
-	else {
-
+int inc_PC(BYTE *registers) {
+	if (PC >= 0 && PC <MEM_SIZE) {
+		registers[PC] += 1;
+		return 1;
 	}
-			}
+	return 0;
 }
 
 void set_PC(BYTE *ptr_reg, BYTE addr) {
 	ptr_reg[PC] = addr;
 }
 
+BYTE pop(BYTE *registers, BYTE *ram) {
+	if (registers[SP] < MEM_SIZE) {
+		registers[SP] += 1;
+		return ram[registers[SP] - 1];
+	} 
+	return ram[registers[SP]];
+}
+
+
+void push(BYTE *registers, BYTE *ram, BYTE val) {
+	if (registers[SP] > 0) {
+		registers[SP] -= 1;
+		ram[registers[SP] + 1] = val;
+	} 
+}

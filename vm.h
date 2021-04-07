@@ -58,13 +58,11 @@ struct Function {
 };
 
 struct PMEM {
-	struct Instruction inst[256];
+	struct Instruction inst[MAX_INST * MAX_FUNC];
 	struct Function functions[MAX_FUNC];
 	int num_functions;
 	int num_inst;
 };
-
-typedef void (*store)(BYTE *, BYTE , BYTE);
 
 void store_reg(BYTE *registers, BYTE reg, BYTE val);
 
@@ -74,4 +72,27 @@ BYTE pop(BYTE *registers, BYTE *ram);
 
 void push(BYTE *registers, BYTE *ram, BYTE val);
 
+BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE stk_sym);
+
+BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A);
+
+void equ(BYTE reg_addr, BYTE *ptr_reg);
+
+void print(BYTE *registers, BYTE *ram, BYTE type, BYTE A);
+
+void not(BYTE *registers, BYTE reg_addr);
+
+void add(BYTE *registers, BYTE *ram, BYTE A, BYTE B);
+
+void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B);
+
+void ret(BYTE *registers, BYTE *stk);
+
+int inc_PC(BYTE *registers);
+
+void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label);
+
+void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B);
+
+int run(struct PMEM *pmem, BYTE *ram, BYTE *registers);
 #endif

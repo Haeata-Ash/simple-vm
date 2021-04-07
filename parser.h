@@ -18,6 +18,8 @@ struct Function read_function(unsigned char *buf, int *index, int *bit_cursor, s
 
 void output_function(struct Function f, struct PMEM *pmem);
 
-unsigned char parse(FILE *fp, struct PMEM *pmem);
+void parse(FILE *fp, struct PMEM *pmem);
+
+void output_function(struct Function f, struct PMEM *pmem);
 
 #endif

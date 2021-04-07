@@ -46,7 +46,7 @@ void init_registers(BYTE *registers) {
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 	while (registers[PC] < pmem->num_inst) {
-		printf("pc: %d\n", registers[PC]);
+
 
 		switch(pmem->inst[registers[PC]].opcode) {
 			case EQU:
@@ -79,6 +79,13 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				continue;
 			case MOV:
 				printf("mov\n");
+
+			printf("opcode: %d\n", pmem->inst[PC].opcode);
+			printf("num_args: %d\n", pmem->inst[PC].num_args);
+			for (int j = 0; j < pmem->inst[PC].num_args; j++) {
+				printf("arg %d: %d\n", j, pmem->inst[PC].args[j]);
+			}
+			printf("\n\n");
 				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[2], pmem->inst[PC].args[3]);
 				break;
 			default:

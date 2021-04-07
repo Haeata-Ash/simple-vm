@@ -77,7 +77,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				continue;
 			case MOV:
 				printf("mov\n");
-				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[2]);
+				mov(registers, ram, pmem->inst[registers[PC]].args[0], pmem->inst[PC].args[1], pmem->inst[PC].args[3]);
 				break;
 			default:
 				return 0;

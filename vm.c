@@ -79,6 +79,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				continue;
 			case MOV:
 				printf("mov\n");
+				printf("%d\n", registers[PC])
 
 			printf("opcode: %d\n", pmem->inst[PC].opcode);
 			printf("num_args: %d\n", pmem->inst[PC].num_args);

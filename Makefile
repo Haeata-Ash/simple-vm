@@ -4,7 +4,8 @@ CFLAGS=-fsanitize=address -Wvla -Wall -Werror -g -std=gnu11 -lasan
 # fill in all your make rules
 
 vm_x2017: vm.c
-	$(CC) $(CFLAGS) $^ -o $@
+	#$(CC) $(CFLAGS) $^ -o $@
+	echo vm.c
 
 objdump_x2017: parser.c
 	$(CC) $(CFLAGS) $^ -o $@

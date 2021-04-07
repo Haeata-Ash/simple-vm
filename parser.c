@@ -54,6 +54,12 @@ struct Instruction read_instruction(BYTE *buf, int *index, int *bit_cursor) {
 		inst.args[i + 1] = get_section(buf, index, bit_cursor, arg_len);
 	}
 
+	if (inst.opcode == MOV) {
+		for (int i = 0; i < 4; i++) {
+			printf("%d\n", inst.args[i]);
+		}
+	}
+
 	return inst;
 }
 

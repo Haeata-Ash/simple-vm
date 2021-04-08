@@ -8,16 +8,20 @@
 #define SP 6 // references the bottom of the stack
 #define PC 7 // references the current opcode, i.e the instruction struct
 #define FP 5 // points to start of current frame
-#define GEN 4 // for random shit
+#define ERR 4 // Is set to non 0 if error occurs
 
 
 int main(int argc, char **argv) {
+	// create program memory and give initial values
 	struct PMEM pmem;
 	pmem.num_inst = 0;
 	pmem.num_functions = 0;
-
+	
+	// ram and registers
 	BYTE ram[MEM_SIZE];
 	BYTE registers[NUM_REG];
+
+	// set all registers to 0
 	init_registers(&registers[0]);
 
 	//read in program to pmem
@@ -27,27 +31,32 @@ int main(int argc, char **argv) {
 
 	//set stack pointer to 255
 	registers[SP] = 0xFF;
-	
 	//set program counter to 0
 	registers[PC] = 0x00;
+
+	// begin executing instructions
 	run(&pmem, &ram[0], &registers[0]);
 
 
 }
 
+// set all registers to 0
 void init_registers(BYTE *registers) {
-	for (registers[GEN] = 0; registers[GEN] < 8; registers[GEN]++) {
-		if (!(registers[GEN] == GEN)) {
-			registers[registers[GEN]] = 0;
-		}
+	for (int i = 0; i < 8; i++) {
+		registers[i] = 0;
 	}
 }
 
+
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
+	// execute instruction pointed to by program counter until non left
 	while (registers[PC] < pmem->num_inst) {
+
+		// current instruction 
 		struct Instruction i = pmem->inst[registers[PC]];
 
+		// find the operation required
 		switch(i.opcode) {
 			case EQU:
 				equ(i.args[1], registers);
@@ -69,6 +78,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				    i.args[3]
 				);
 				break;
+
 			case RET:
 				ret(registers, ram);
 				break;
@@ -88,6 +98,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				return 0;
 		}
 
+		// check that PC is still in valid range #####TO DO######
 		if (!inc_PC(registers)) {
 			return 0;
 		}
@@ -95,11 +106,13 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	return 1;
 }
 
-
+// get the address of a stack symbol
 BYTE get_stk_sym_addr(BYTE *registers, BYTE stk_sym) {
+	//take start of stack frame and offset relative stk symbol
 	return registers[FP] + stk_sym;
 }
 
+// store a value in the appropriate memory region and addr
 void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 	switch (A_type) {
 		case REG:
@@ -112,6 +125,7 @@ void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 			store_stk(registers, ram, access_stk_sym(registers, ram, A), B);
 			return;
 		default:
+			// ####TO DO##########
 			return;
 
 	}
@@ -150,24 +164,32 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 	}
 }
 
+void set_error(BYTE *registers, BYTE error_code) {
+	registers[ERR] = error_code;
+}
+
+void error_msg(BYTE *registers) {
+
+}
+
 void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	store(registers, ram, A_type, A, get_data(registers, ram, B_type, B));
 }
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 	push(registers, ram, registers[FP]);
 	push(registers, ram, registers[PC]);
-	for (registers[GEN] = 0; registers[GEN] < pmem->num_functions; registers[GEN] += 1) {
-		if (label == pmem->functions[registers[GEN]].label) {
-			registers[PC] = pmem->functions[registers[GEN]].start;
+	for (int i = 0; i < pmem->num_functions; i += 1) {
+		if (label == pmem->functions[i].label) {
+			registers[PC] = pmem->functions[i].start;
 		}
 	}
 }
 void ret(BYTE *registers, BYTE *stk) {
-	registers[GEN] = registers[FP] - registers[SP];
+	BYTE frame_size = registers[FP] - registers[SP];
 
-	while (registers[GEN] > 0) {
+	while (frame_size > 0) {
 		pop(registers, stk);
-		registers[GEN] -= 1;
+		frame_size -= 1;
 	}
 
 	registers[PC] = pop(registers, stk);

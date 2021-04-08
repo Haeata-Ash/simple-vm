@@ -68,7 +68,6 @@ struct Function read_function(BYTE *buf, int *index, int *bit_cursor, struct PME
 		for (int j = 0; j < inst.num_args; j+=2) {
 			if (inst.args[j] == PTR || inst.args[j] == STK) {
 				inst.args[j + 1] = replace_symbol(&f,inst.args[j + 1]);
-				printf("new symbol val: %d\n", inst.args[j + 1]);
 			}
 		}
 
@@ -231,6 +230,7 @@ void output_type(BYTE type) {
 }
 
 void print_stk(int val) {
+	printf("val: %d\n", val);
 		if (val > 26) {
 			printf("%c", val + 97);
 		} else {

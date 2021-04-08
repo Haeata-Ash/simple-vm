@@ -142,12 +142,20 @@ void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val) {
 	}
 }
 
-BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE stk_sym) {
-		return ram[registers[FP] - stk_sym];
+void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val) {
+	BYTE addr = registers[FP] - offset;
+	store_stk(registers, ram, addr, val);
+
+}
+
+BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
+	// get stack symbol location by offsetting from frame pointer
+	return ram[registers[FP] - offset];
 }
 
 
 BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
+	// get stk symbol value then use it as an address in ram
 	return ram[access_stk_sym(registers, ram, stk_sym)];
 }
 

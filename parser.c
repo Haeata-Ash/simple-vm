@@ -32,47 +32,63 @@ void parse(FILE *fp, struct PMEM *pmem) {
 	}
 }
 
-void add_stk_symbol(struct Function *f, BYTE symbol) {
-	 int is_new = 1;
-	 for (int i = 0; i < f->num_symbols; i++) {
+BYTE replace_symbol(struct Function *f, BYTE symbol) {
+	 for (BYTE i = 0; i < f->num_symbols; i++) {
 		 if (symbol == f->symbols[i]) {
-			 is_new = 0;
+			 return i;
 		 }
 	 }
-
-	 if (is_new)  {
-		 f->symbols[f->num_symbols] = symbol;
-		 f->num_symbols += 1;
-	 }
+	 f->num_symbols += 1;
+	 return f->num_symbols;
  }
 
 struct Function read_function(BYTE *buf, int *index, int *bit_cursor, struct PMEM *pmem) {
+	//intialize new function
 	struct Function f;
 	f.num_symbols = 0;
+
+	// get the no. of instructions and the functions start pc
 	f.num_inst = get_section(buf, index, bit_cursor, LEN_INST);
 	f.start = pmem->num_inst;
+
+	//add each instruction to program memory
 	for (int i = f.num_inst - 1; i >= 0; i--) {
+		//get instruction pc value
 		int inst_index = pmem->num_inst + i;
-		pmem->inst[inst_index] = read_instruction(buf, index, bit_cursor);
-		for (int i = 0; i < pmem->inst[inst_index].num_args; i+=2) {
-			if (pmem->inst[inst_index].args[i] == STK) {
-				add_stk_symbol(&f, pmem->inst[inst_index].args[i+1]);
-			}
-		}
+
+		// read in the instruction
+		pmem->inst[inst_index] = read_instruction(&f, buf, index, bit_cursor);
 	}
+
+	// increment number of instructions
 	pmem->num_inst += f.num_inst;
+
+	// add function label
 	f.label = get_section(buf, index, bit_cursor, LEN_LABEL);
 	return f;
 }
 
-struct Instruction read_instruction(BYTE *buf, int *index, int *bit_cursor) {
+struct Instruction read_instruction(struct Function *f, BYTE *buf, int *index, int *bit_cursor) {
+	// initialise instruction
 	struct Instruction inst;
+
+	// read in its opcode and the number of args
 	inst.opcode = get_section(buf, index, bit_cursor, LEN_OPCODE);
 	inst.num_args = get_num_args(inst.opcode) * 2; 
+
+	// read in its arguments and types, replacing stack symbols and ptr with 
+	// frame pointer offsets
 	for (int i = 0; i < inst.num_args; i+=2) {
+		//type 
 		inst.args[i] = get_section(buf, index, bit_cursor, LEN_TYPE);
 		int arg_len = get_arg_len(inst.args[i]);
-		inst.args[i + 1] = get_section(buf, index, bit_cursor, arg_len);
+		
+		// argument value
+		if (inst.args[i] == STK || inst.args[i] == PTR) {
+			inst.args[i + 1] = replace_symbol(f,get_section(buf, index, bit_cursor, arg_len));
+		} else {
+			inst.args[i + 1] = get_section(buf, index, bit_cursor, arg_len);
+		}
 	}
 
 	return inst;
@@ -213,17 +229,11 @@ void print_stk(int val) {
 
 }
 
-void output_arg(struct Function *f, BYTE arg, BYTE type) {
+void output_arg(BYTE arg, BYTE type) {
 	if (type == VAL || type == REG) {
 		printf("%d", arg);
-	} else if (type == PTR) {
+	} else if (type == PTR || type == STK) {
 			print_stk(arg);
-	} else if (type == STK) {
-		for (int i = 0; i < f->num_symbols; i++) {
-			if (f->symbols[i] == arg) {
-				print_stk(f->num_symbols - i - 1);
-			}
-		}
 	} else {
 		printf("error");
 	}
@@ -245,17 +255,17 @@ void output_function(struct Function f, struct PMEM *pmem) {
 			printf(" ");
 			output_type(inst.args[0]);
 			printf(" ");
-			output_arg(&f, inst.args[1], inst.args[0]);
+			output_arg(inst.args[1], inst.args[0]);
 		} else {
 			output_opcode(inst.opcode);
 			printf(" ");
 			output_type(inst.args[0]);
 			printf(" ");
-			output_arg(&f, inst.args[1], inst.args[0]);
+			output_arg(inst.args[1], inst.args[0]);
 			printf(" ");
 			output_type(inst.args[2]);
 			printf(" ");
-			output_arg(&f, inst.args[3], inst.args[2]);
+			output_arg(inst.args[3], inst.args[2]);
 		}
 		printf("\n");
 	}

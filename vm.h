@@ -55,7 +55,7 @@ struct Function {
 	int label;
 	int num_inst;
 	int start;
-	int num_symbols;
+	BYTE num_symbols;
 	BYTE symbols[32];
 };
 

@@ -8,7 +8,7 @@ unsigned char get_section(unsigned char *buf, int *index, int *bit_cursor, int r
 
 unsigned char mask(int num_bits);
 
-struct Instruction read_instruction(unsigned char *buf, int *index, int *bit_cursor);
+struct Instruction read_instruction(struct Function *f, unsigned char *buf, int *index, int *bit_cursor);
 
 int get_num_args(unsigned char op);
 

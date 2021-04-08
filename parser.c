@@ -33,17 +33,13 @@ void parse(FILE *fp, struct PMEM *pmem) {
 }
 
 BYTE replace_symbol(struct Function *f, BYTE symbol) {
-	printf("\n\n");
-	printf("symbol: %d\n", symbol);
 	for (BYTE i = 0; i < f->num_symbols; i++) {
 		if (symbol == f->symbols[i]) {
-			printf("found: %d\n", f->num_symbols - i - 1);
 			return i;
 		}
 	}
 	f->symbols[f->num_symbols] = symbol;
 	f->num_symbols += 1;
-	printf("new: %d\n", f->num_symbols - 1);
 	return f->num_symbols - 1;
  }
 

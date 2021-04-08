@@ -221,7 +221,7 @@ void output_arg(struct Function *f, BYTE arg, BYTE type) {
 	} else if (type == STK) {
 		for (int i = 0; i < f->num_symbols; i++) {
 			if (f->symbols[i] == arg) {
-				print_stk(i);
+				print_stk(f->num_symbols - i - 1);
 			}
 		}
 	} else {

@@ -35,7 +35,7 @@ void parse(FILE *fp, struct PMEM *pmem) {
 BYTE replace_symbol(struct Function *f, BYTE symbol) {
 	for (BYTE i = 0; i < f->num_symbols; i++) {
 		if (symbol == f->symbols[i]) {
-			return i;
+			return f->num_symbols - i;
 		}
 	}
 	f->symbols[f->num_symbols] = symbol;
@@ -59,6 +59,15 @@ struct Function read_function(BYTE *buf, int *index, int *bit_cursor, struct PME
 
 		// read in the instruction
 		pmem->inst[inst_index] = read_instruction(&f, buf, index, bit_cursor);
+	}
+	for (int i = 0; i < f.num_inst; i++) {
+		struct Instruction inst = pmem->inst[f.start + i];
+		for (int j = 0; j < inst.num_args; j+=2) {
+			if (inst.args[j] == PTR || inst.args[j] == STK) {
+				inst.args[j + 1] = replace_symbol(&f,inst.args[j + 1]);
+			}
+		}
+
 	}
 
 	// increment number of instructions
@@ -85,11 +94,7 @@ struct Instruction read_instruction(struct Function *f, BYTE *buf, int *index, i
 		int arg_len = get_arg_len(inst.args[i]);
 		
 		// argument value
-		if (inst.args[i] == STK || inst.args[i] == PTR) {
-			inst.args[i + 1] = replace_symbol(f,get_section(buf, index, bit_cursor, arg_len));
-		} else {
-			inst.args[i + 1] = get_section(buf, index, bit_cursor, arg_len);
-		}
+		inst.args[i + 1] = get_section(buf, index, bit_cursor, arg_len);
 	}
 
 	return inst;

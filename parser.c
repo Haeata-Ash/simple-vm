@@ -187,6 +187,9 @@ void output_arg(BYTE arg, BYTE type) {
 	if (type == VAL || type == REG) {
 		printf("%d", arg);
 	} else if (type == STK || type == PTR) {
+		if (type == STK) {
+			printf("arg: %d\n", arg);
+		}
 		if (arg > 26) {
 			printf("%c", arg + 97);
 		} else {

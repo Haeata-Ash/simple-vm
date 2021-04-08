@@ -264,19 +264,16 @@ void output_function(struct Function f, struct PMEM *pmem) {
 			printf(" ");
 			output_type(inst.args[0]);
 			printf(" ");
-			printf("val: %d\n", inst.args[1]);
 			output_arg(inst.args[1], inst.args[0]);
 		} else {
 			output_opcode(inst.opcode);
 			printf(" ");
 			output_type(inst.args[0]);
 			printf(" ");
-			printf("val: %d\n", inst.args[1]);
 			output_arg(inst.args[1], inst.args[0]);
 			printf(" ");
 			output_type(inst.args[2]);
 			printf(" ");
-			printf("val: %d\n", inst.args[3]);
 			output_arg(inst.args[3], inst.args[2]);
 		}
 		printf("\n");

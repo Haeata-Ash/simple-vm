@@ -22,4 +22,8 @@ void parse(FILE *fp, struct PMEM *pmem);
 
 void output_function(struct Function f, struct PMEM *pmem);
 
+void add_stk_symbol(struct Function *f, unsigned char symbol);
+
+void print_stk(int val);
+
 #endif

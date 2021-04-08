@@ -32,12 +32,33 @@ void parse(FILE *fp, struct PMEM *pmem) {
 	}
 }
 
+void add_stk_symbol(struct Function *f, BYTE symbol) {
+	 int is_new = 1;
+	 for (int i = 0; i < f->num_symbols; i++) {
+		 if (symbol == f->symbols[i]) {
+			 is_new = 0;
+		 }
+	 }
+
+	 if (is_new)  {
+		 f->symbols[f->num_symbols] = symbol;
+		 f->num_symbols += 1;
+	 }
+ }
+
 struct Function read_function(BYTE *buf, int *index, int *bit_cursor, struct PMEM *pmem) {
 	struct Function f;
+	f.num_symbols = 0;
 	f.num_inst = get_section(buf, index, bit_cursor, LEN_INST);
 	f.start = pmem->num_inst;
 	for (int i = f.num_inst - 1; i >= 0; i--) {
-		pmem->inst[pmem->num_inst + i] = read_instruction(buf, index, bit_cursor);
+		int inst_index = pmem->num_inst + i;
+		pmem->inst[inst_index] = read_instruction(buf, index, bit_cursor);
+		for (int i = 0; i < pmem->inst[inst_index].num_args; i+=2) {
+			if (pmem->inst[inst_index].args[i] == STK) {
+				add_stk_symbol(&f, pmem->inst[inst_index].args[i+1]);
+			}
+		}
 	}
 	pmem->num_inst += f.num_inst;
 	f.label = get_section(buf, index, bit_cursor, LEN_LABEL);
@@ -183,17 +204,25 @@ void output_type(BYTE type) {
 	}
 }
 
-void output_arg(BYTE arg, BYTE type) {
+void print_stk(int val) {
+		if (val > 26) {
+			printf("%c", val + 97);
+		} else {
+			printf("%c", val + 65);
+		}
+
+}
+
+void output_arg(struct Function *f, BYTE arg, BYTE type) {
 	if (type == VAL || type == REG) {
 		printf("%d", arg);
-	} else if (type == STK || type == PTR) {
-		if (type == STK) {
-			printf("arg: %d\n", arg);
-		}
-		if (arg > 26) {
-			printf("%c", arg + 97);
-		} else {
-			printf("%c", arg+ 65);
+	} else if (type == PTR) {
+			print_stk(arg);
+	} else if (type == STK) {
+		for (int i = 0; i < f->num_symbols; i++) {
+			if (f->symbols[i] == arg) {
+				print_stk(i);
+			}
 		}
 	} else {
 		printf("error");
@@ -216,17 +245,17 @@ void output_function(struct Function f, struct PMEM *pmem) {
 			printf(" ");
 			output_type(inst.args[0]);
 			printf(" ");
-			output_arg(inst.args[1], inst.args[0]);
+			output_arg(&f, inst.args[1], inst.args[0]);
 		} else {
 			output_opcode(inst.opcode);
 			printf(" ");
 			output_type(inst.args[0]);
 			printf(" ");
-			output_arg(inst.args[1], inst.args[0]);
+			output_arg(&f, inst.args[1], inst.args[0]);
 			printf(" ");
 			output_type(inst.args[2]);
 			printf(" ");
-			output_arg(inst.args[3], inst.args[2]);
+			output_arg(&f, inst.args[3], inst.args[2]);
 		}
 		printf("\n");
 	}

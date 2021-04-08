@@ -37,7 +37,7 @@ BYTE replace_symbol(struct Function *f, BYTE symbol) {
 	for (BYTE i = 0; i < f->num_symbols; i++) {
 		if (symbol == f->symbols[i]) {
 			printf("found: %d\n", f->num_symbols - i);
-			return f->num_symbols - i;
+			return f->num_symbols - i - 1;
 		}
 	}
 	f->symbols[f->num_symbols] = symbol;

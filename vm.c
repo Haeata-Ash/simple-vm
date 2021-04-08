@@ -28,9 +28,6 @@ int main(int argc, char **argv) {
 	char *file = argv[1];
 	FILE *fp = fopen(file, "rb");
 	parse(fp, &pmem);
-	for (int i = 0; i < pmem.num_functions; i++) {
-		output_function(pmem.functions[i], &pmem);
-	}
 
 	//set stack pointer to 255
 	registers[SP] = 0xFF;

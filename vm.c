@@ -30,10 +30,6 @@ int main(int argc, char **argv) {
 	FILE *fp = fopen(file, "rb");
 	parse(fp, &pmem);
 
-	for (int i = pmem.num_functions - 1; i >= 0; i--) {
-		output_function(pmem.functions[i], &pmem);
-	}
-
 
 	// begin executing instructions
 	run(&pmem, &ram[0], &registers[0]);

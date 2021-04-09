@@ -21,18 +21,15 @@ int main(int argc, char **argv) {
 	BYTE ram[MEM_SIZE];
 	BYTE registers[NUM_REG];
 
-	// set all registers to 0
+	// give registers initial values
 	init_registers(&registers[0]);
+
 
 	//read in program to pmem
 	char *file = argv[1];
 	FILE *fp = fopen(file, "rb");
 	parse(fp, &pmem);
 
-	//set stack pointer to 255
-	registers[SP] = 0xFF;
-	//set program counter to 0
-	registers[PC] = 0x00;
 
 	// begin executing instructions
 	run(&pmem, &ram[0], &registers[0]);
@@ -43,18 +40,24 @@ int main(int argc, char **argv) {
 // set all registers to 0
 void init_registers(BYTE *registers) {
 	for (int i = 0; i < 8; i++) {
-		registers[i] = 0;
+		if (i == SP || i == FP) {
+			registers[i] = 0xFF;
+		} else {
+			registers[i] = 0;
+		}
 	}
 }
 
 
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
+	int num_inst = pmem->num_inst;
+	struct Instruction i;
 
 	// execute instruction pointed to by program counter until non left
-	while (registers[PC] < pmem->num_inst) {
+	while (registers[PC] < num_inst) {
 
 		// current instruction 
-		struct Instruction i = pmem->inst[registers[PC]];
+		i = pmem->inst[registers[PC]];
 
 		// find the operation required
 		switch(i.opcode) {
@@ -119,7 +122,8 @@ void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 			store_reg(registers, A, B);
 			return;
 		case STK:
-			store_stk(registers, ram, registers[FP] - A, B);
+			printf("storing stk symbol\n");
+			store_stk(registers, ram, A, B);
 			return;
 		case PTR:
 			store_stk(registers, ram, access_stk_sym(registers, ram, A), B);
@@ -137,9 +141,7 @@ void store_reg(BYTE *registers, BYTE reg, BYTE val) {
 }
 
 void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val) {
-	if (registers[SP] < addr) {
-		ram[addr] = val;
-	}
+	ram[addr] = val;
 }
 
 void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val) {

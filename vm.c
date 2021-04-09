@@ -185,6 +185,8 @@ void error_msg(BYTE *registers) {
 }
 
 void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
+	printf("B: %d\n", B);
+	printf("A: %d\n", A);
 	store(registers, ram, A_type, A, get_data(registers, ram, B_type, B));
 }
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
@@ -209,7 +211,10 @@ void ret(BYTE *registers, BYTE *stk) {
 }
 
 void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
+	printf("\n");
 	printf("refer\n");
+	printf("A: %d\n", A);
+	printf("B: %d\n", B);
 	if (A_type == REG) {
 		store_reg(registers, A, get_stk_sym_addr(registers, B));
 	} else {

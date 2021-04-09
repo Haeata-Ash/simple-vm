@@ -192,7 +192,7 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 	push(registers, ram, registers[PC]);
 	for (int i = 0; i < pmem->num_functions; i += 1) {
 		if (label == pmem->functions[i].label) {
-			registers[PC] = pmem->functions[i].start;
+			registers[PC] = pmem->functions[i].start - 1;
 		}
 	}
 }

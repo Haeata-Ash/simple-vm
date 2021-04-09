@@ -159,6 +159,7 @@ BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
 BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 	printf("dereferncing pointer\n");
 	// get stk symbol value then use it as an address in ram
+	printf("stk_sym: %d\n", stk_sym);
 	return ram[access_stk_sym(registers, ram, stk_sym)];
 }
 
@@ -215,7 +216,7 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 	printf("refer\n");
 	printf("A: %d\n", A);
 	printf("B: %d\n", B);
-	store(registers, ram, A_type, A, access_stk_sym(registers, ram, B));
+	store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
 }
 
 void add(BYTE *registers, BYTE *ram, BYTE A, BYTE B) {

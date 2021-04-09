@@ -8,7 +8,7 @@
 #define SP 6 // references the bottom of the stack
 #define PC 7 // references the current opcode, i.e the instruction struct
 #define FP 5 // points to start of current frame
-#define ERR 4 // Is set to non 0 if error occurs
+#define STATUS 4 // Is set to non 0 if error occurs
 
 
 int main(int argc, char **argv) {
@@ -102,9 +102,6 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 		}
 
 		// check that PC is still in valid range #####TO DO######
-		if (!inc_PC(registers)) {
-			return 0;
-		}
 	}
 	return 1;
 }
@@ -177,7 +174,7 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 }
 
 void set_error(BYTE *registers, BYTE error_code) {
-	registers[ERR] = error_code;
+	registers[STATUS] = error_code;
 }
 
 void error_msg(BYTE *registers) {
@@ -190,6 +187,7 @@ void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 	push(registers, ram, registers[FP]);
 	push(registers, ram, registers[PC]);
+	registers[FP] = registers[SP];
 	for (int i = 0; i < pmem->num_functions; i += 1) {
 		if (label == pmem->functions[i].label) {
 			registers[PC] = pmem->functions[i].start - 1;
@@ -206,6 +204,9 @@ void ret(BYTE *registers, BYTE *stk) {
 
 	registers[PC] = pop(registers, stk);
 	registers[FP] = pop(registers, stk);
+	if (registers[STATUS] == 2) {
+		registers[STATUS] = 1;
+	}
 }
 
 void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
@@ -232,12 +233,8 @@ void equ(BYTE reg_addr, BYTE *ptr_reg) {
 }
 
 
-int inc_PC(BYTE *registers) {
-	if (registers[PC] == MEM_SIZE - 1) {
-		return 0;
-	}
+void inc_PC(BYTE *registers) {
 	registers[PC] += 1;
-	return 1;
 }
 
 void inc_SP(BYTE *registers) {
@@ -260,7 +257,9 @@ BYTE pop(BYTE *registers, BYTE *ram) {
 	if (registers[SP] < MEM_SIZE - 1 ) {
 		registers[SP] += 1;
 		return ram[registers[SP] - 1];
-	} 
+	} else {
+		registers[STATUS] = 2;
+	}
 	return ram[registers[SP]];
 }
 

@@ -98,7 +98,7 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B);
 
 void ret(BYTE *registers, BYTE *stk);
 
-int inc_PC(BYTE *registers);
+void inc_PC(BYTE *registers);
 
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label);
 

@@ -144,9 +144,12 @@ void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val) {
 }
 
 void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val) {
-	BYTE addr = registers[FP] - offset;
-	store_stk(registers, ram, addr, val);
-
+	if (offset >= registers[FP] - registers[SP]) {
+		push(registers, ram, val);
+	} else {
+		BYTE addr = registers[FP] - offset;
+		store_stk(registers, ram, addr, val);
+	}
 }
 
 BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
@@ -237,6 +240,18 @@ int inc_PC(BYTE *registers) {
 	return 1;
 }
 
+void inc_SP(BYTE *registers) {
+	if (registers[SP] < MEM_SIZE - 1) {
+		registers[SP] += 1;
+	}
+}
+
+void dec_SP(BYTE *registers) {
+	if (registers[SP] > 0) {
+		registers[SP] -= 1;
+	}
+}
+
 void set_PC(BYTE *ptr_reg, BYTE addr) {
 	ptr_reg[PC] = addr;
 }
@@ -251,8 +266,8 @@ BYTE pop(BYTE *registers, BYTE *ram) {
 
 
 void push(BYTE *registers, BYTE *ram, BYTE val) {
-	if (registers[SP] > 0) {
+	if (registers[SP] >= 0) {
+		ram[registers[SP]] = val;
 		registers[SP] -= 1;
-		ram[registers[SP] + 1] = val;
 	} 
 }

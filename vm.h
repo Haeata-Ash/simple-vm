@@ -72,6 +72,10 @@ void store_reg(BYTE *registers, BYTE reg, BYTE val);
 
 void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val);
 
+void dec_SP(BYTE *registers);
+
+void inc_SP(BYTE *registers);
+
 void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val);
 
 BYTE pop(BYTE *registers, BYTE *ram);

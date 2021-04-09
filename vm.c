@@ -125,6 +125,7 @@ void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 			store_stk_symbol(registers, ram, A, B);
 			return;
 		case PTR:
+			printf("storing in pointer\n");
 			store_stk(registers, ram, access_stk_sym(registers, ram, A), B);
 			return;
 		default:
@@ -156,6 +157,7 @@ BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
 
 
 BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
+	printf("dereferncing pointer\n");
 	// get stk symbol value then use it as an address in ram
 	return ram[access_stk_sym(registers, ram, stk_sym)];
 }
@@ -163,6 +165,7 @@ BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 	switch (type) {
 		case PTR:
+			printf("getting data from pointer\n");
 			return deref_ptr(registers, ram, A);
 		case STK:
 			return access_stk_sym(registers, ram, A);
@@ -206,6 +209,7 @@ void ret(BYTE *registers, BYTE *stk) {
 }
 
 void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
+	printf("refer\n");
 	if (A_type == REG) {
 		store_reg(registers, A, get_stk_sym_addr(registers, B));
 	} else {

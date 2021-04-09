@@ -122,7 +122,6 @@ void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 			store_reg(registers, A, B);
 			return;
 		case STK:
-			printf("storing stk symbol\n");
 			store_stk_symbol(registers, ram, A, B);
 			return;
 		case PTR:

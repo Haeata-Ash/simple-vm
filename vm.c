@@ -215,11 +215,7 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 	printf("refer\n");
 	printf("A: %d\n", A);
 	printf("B: %d\n", B);
-	if (A_type == REG) {
-		store_reg(registers, A, get_stk_sym_addr(registers, B));
-	} else {
-		store_stk(registers, ram, A, get_stk_sym_addr(registers, B));
-	}
+	store(registers, ram, A_type, A, access_stk_sym(registers, ram, B));
 }
 
 void add(BYTE *registers, BYTE *ram, BYTE A, BYTE B) {

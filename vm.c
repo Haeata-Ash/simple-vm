@@ -8,7 +8,11 @@
 #define SP 6 // references the bottom of the stack
 #define PC 7 // references the current opcode, i.e the instruction struct
 #define FP 5 // points to start of current frame
-#define STATUS 4 // Is set to non 0 if error occurs
+#define STATUS 4 // Is set to non 0 if status change occurs
+
+
+// status codes
+#define DONE 1
 
 
 int main(int argc, char **argv) {
@@ -86,7 +90,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				ret(registers, ram);
 				break;
 			case CAL:
-				call(pmem, registers, ram, i.args[1]);
+				//call(pmem, registers, ram, i.args[1]);
 				break;
 			case MOV:
 				mov(registers,

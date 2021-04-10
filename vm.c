@@ -13,6 +13,7 @@
 
 // status codes
 #define DONE 1
+#define ERR 0
 
 
 int main(int argc, char **argv) {
@@ -90,7 +91,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				ret(registers, ram);
 				break;
 			case CAL:
-				//call(pmem, registers, ram, i.args[1]);
+				call(pmem, registers, ram, i.args[1]);
 				break;
 			case MOV:
 				mov(registers,
@@ -106,6 +107,11 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 		}
 
 		// check that PC is still in valid range #####TO DO######
+		if (registers[STATUS] == DONE) {
+			return 1;
+		} else if (registers[STATUS] == ERR) {
+			return 0;
+		} else {}
 	}
 	return 1;
 }
@@ -145,7 +151,7 @@ void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val) {
 }
 
 void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val) {
-	if (offset >= registers[FP] - registers[SP]) {
+	if (offset <= registers[FP] - registers[SP]) {
 		push(registers, ram, val);
 	} else {
 		BYTE addr = registers[FP] - offset;
@@ -178,7 +184,7 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 }
 
 void set_error(BYTE *registers, BYTE error_code) {
-	registers[STATUS] = error_code;
+	registers[STATUS] = ERR;
 }
 
 void error_msg(BYTE *registers) {

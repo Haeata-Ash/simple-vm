@@ -114,8 +114,10 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 		if (registers[STATUS] == NORMAL) {}
 
 		else if (registers[STATUS] == DONE) {
+			//printf("exit success\n");
 			return 1;
 		} else {
+			//printf("error exit\n");
 			return 0;
 		}
 	}
@@ -201,9 +203,12 @@ void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	store(registers, ram, A_type, A, get_data(registers, ram, B_type, B));
 }
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
+	//printf("call: %d\n", label);
 	push(registers, ram, registers[FP]);
 	push(registers, ram, registers[PC]);
+
 	registers[FP] = registers[SP];
+
 	for (int i = 0; i < pmem->num_functions; i += 1) {
 		if (label == pmem->functions[i].label) {
 			registers[PC] = pmem->functions[i].start - 1;
@@ -212,6 +217,8 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 }
 void ret(BYTE *registers, BYTE *stk) {
 	BYTE frame_size = registers[FP] - registers[SP];
+//	printf("###############################\n");
+//	printf("frame size: %d\n", frame_size);
 
 	while (frame_size > 0) {
 		pop(registers, stk);
@@ -220,6 +227,8 @@ void ret(BYTE *registers, BYTE *stk) {
 
 	registers[PC] = pop(registers, stk);
 	registers[FP] = pop(registers, stk);
+	//printf("old pc: %d\n", registers[PC]);
+	//printf("old FP: %d\n", registers[FP]);
 	if (registers[STATUS] == STK_EMPTY) {
 		registers[STATUS] = DONE;
 	}
@@ -285,7 +294,7 @@ void set_PC(BYTE num_inst, BYTE *registers, BYTE new_pc) {
 
 BYTE pop(BYTE *registers, BYTE *ram) {
 	inc_SP(registers);
-	return registers[SP];
+	return ram[registers[SP]];
 }
 
 

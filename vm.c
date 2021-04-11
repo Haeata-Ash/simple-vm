@@ -12,8 +12,11 @@
 
 
 // status codes
+#define NORMAL 0
 #define DONE 1
-#define ERR 0
+#define STK_EMPTY 2 
+#define STK_OVERFLOW 3
+#define INVALID_JUMP_PC 4
 
 
 int main(int argc, char **argv) {
@@ -30,22 +33,13 @@ int main(int argc, char **argv) {
 	// give registers initial values
 	init_registers(&registers[0]);
 
-
 	//read in program to pmem
 	char *file = argv[1];
 	FILE *fp = fopen(file, "rb");
 	parse(fp, &pmem);
 
-	ram[0] = 0;
-	if (ram[0] == 0) {
-		for (int i = 0; i < pmem.num_functions; i++) {
-			output_function(pmem.functions[i], &pmem);
-		}
-	}
-
-
 	// begin executing instructions
-	//run(&pmem, &ram[0], &registers[0]);
+	run(&pmem, &ram[0], &registers[0]);
 
 
 }
@@ -68,6 +62,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 	// execute instruction pointed to by program counter until non left
 	while (registers[PC] < num_inst) {
+		//printf("FP: %d     || SP: %d    || PC: %d\n\n", registers[FP], registers[SP], registers[PC]);
 
 		// current instruction 
 		i = pmem->inst[registers[PC]];
@@ -111,15 +106,18 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				);
 				break;
 			default:
-				return 0;
+				printf("error");
 		}
+		inc_PC(registers);
 
 		// check that PC is still in valid range #####TO DO######
-		if (registers[STATUS] == DONE) {
+		if (registers[STATUS] == NORMAL) {}
+
+		else if (registers[STATUS] == DONE) {
 			return 1;
-		} else if (registers[STATUS] == ERR) {
+		} else {
 			return 0;
-		} else {}
+		}
 	}
 	return 1;
 }
@@ -127,7 +125,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 // get the address of a stack symbol
 BYTE get_stk_sym_addr(BYTE *registers, BYTE stk_sym) {
 	//take start of stack frame and offset relative stk symbol
-	return registers[FP] + stk_sym;
+	return registers[FP] - stk_sym;
 }
 
 // store a value in the appropriate memory region and addr
@@ -192,7 +190,7 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 }
 
 void set_error(BYTE *registers, BYTE error_code) {
-	registers[STATUS] = ERR;
+	registers[STATUS] = error_code;
 }
 
 void error_msg(BYTE *registers) {
@@ -222,8 +220,8 @@ void ret(BYTE *registers, BYTE *stk) {
 
 	registers[PC] = pop(registers, stk);
 	registers[FP] = pop(registers, stk);
-	if (registers[STATUS] == 2) {
-		registers[STATUS] = 1;
+	if (registers[STATUS] == STK_EMPTY) {
+		registers[STATUS] = DONE;
 	}
 }
 
@@ -252,39 +250,46 @@ void equ(BYTE reg_addr, BYTE *ptr_reg) {
 
 
 void inc_PC(BYTE *registers) {
-	registers[PC] += 1;
+	if (registers[PC] == 255) {
+		registers[STATUS] = DONE;
+	} else {
+		registers[PC] += 1;
+	}
 }
 
 void inc_SP(BYTE *registers) {
-	if (registers[SP] < MEM_SIZE - 1) {
+	if (registers[SP] == MEM_SIZE - 1) {
+		set_error(registers, STK_EMPTY);
+
+	} else {
 		registers[SP] += 1;
 	}
 }
 
 void dec_SP(BYTE *registers) {
-	if (registers[SP] > 0) {
+	if (registers[SP] == 0) {
+		set_error(registers, STK_OVERFLOW);
+	}
+	else {
 		registers[SP] -= 1;
 	}
 }
 
-void set_PC(BYTE *ptr_reg, BYTE addr) {
-	ptr_reg[PC] = addr;
+void set_PC(BYTE num_inst, BYTE *registers, BYTE new_pc) {
+	if (registers[PC] >= num_inst) {
+		set_error(registers, INVALID_JUMP_PC);
+		return;
+	}
+	registers[PC] = new_pc;
 }
 
 BYTE pop(BYTE *registers, BYTE *ram) {
-	if (registers[SP] < MEM_SIZE - 1 ) {
-		registers[SP] += 1;
-		return ram[registers[SP] - 1];
-	} else {
-		registers[STATUS] = 2;
-	}
-	return ram[registers[SP]];
+	inc_SP(registers);
+	return registers[SP];
 }
 
 
 void push(BYTE *registers, BYTE *ram, BYTE val) {
-	if (registers[SP] >= 0) {
-		ram[registers[SP]] = val;
-		registers[SP] -= 1;
-	} 
+	ram[registers[SP]] = val;
+	dec_SP(registers);
 }

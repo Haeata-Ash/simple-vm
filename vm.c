@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
 	struct PMEM pmem;
 	pmem.num_inst = 0;
 	pmem.num_functions = 0;
+
 	
 	// ram and registers
 	BYTE ram[MEM_SIZE];

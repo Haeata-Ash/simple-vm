@@ -40,7 +40,8 @@ int main(int argc, char **argv) {
 	parse(fp, &pmem);
 
 	// begin executing instructions
-	run(&pmem, &ram[0], &registers[0]);
+	return run(&pmem, &ram[0], &registers[0]);
+	
 
 
 }
@@ -132,9 +133,9 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 			case CALL_0:
 				break;
 			case STK_OVERFLOW:
-				return 1;
+				return EXIT_FAILURE;
 			case STK_EMPTY:
-				return 1;
+				return EXIT_FAILURE;
 			case DONE:
 				return 0;
 			default:

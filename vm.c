@@ -17,6 +17,7 @@
 #define STK_EMPTY 2 
 #define STK_OVERFLOW 3
 #define INVALID_JUMP_PC 4
+#define CALL_0 5
 
 
 int main(int argc, char **argv) {
@@ -55,6 +56,15 @@ void init_registers(BYTE *registers) {
 	}
 }
 
+void print_vm_state(BYTE *registers, BYTE *ram) {
+	for (int i = 0; i < 4; i++) {
+		printf("REGISTER %d: %d\n", i, registers[i]);
+	}
+	for (int i = 255; i > registers[SP]; i--) {
+		printf("Stack Addr %d: %d\n", i, ram[i]);
+	}
+}
+
 
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	int num_inst = pmem->num_inst;
@@ -69,11 +79,9 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 	// execute instruction pointed to by program counter until non left
 	while (registers[PC] < num_inst) {
-		//printf("FP: %d     || SP: %d    || PC: %d\n\n", registers[FP], registers[SP], registers[PC]);
 
 		// current instruction 
 		i = pmem->inst[registers[PC]];
-		//printf("Instruction opcode: %d\n", i.opcode);
 
 		// find the operation required
 		switch(i.opcode) {
@@ -116,18 +124,24 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 			default:
 				printf("error");
 		}
-		inc_PC(registers);
+		//printf("FP: %d     || SP: %d    || PC: %d\n\n", registers[FP], registers[SP], registers[PC]);
+		//print_vm_state(registers, ram);
+		//printf("#######################################\n\n");
 
-		// check that PC is still in valid range #####TO DO######
-		if (registers[STATUS] == NORMAL) {}
-
-		else if (registers[STATUS] == DONE) {
-			//printf("exit success\n");
-			return 1;
-		} else {
-			//printf("error exit\n");
-			return 0;
+		switch (registers[STATUS]) {
+			case CALL_0:
+				break;
+			case STK_OVERFLOW:
+				return 0;
+			case STK_EMPTY:
+				return 0;
+			case DONE:
+				return 1;
+			default:
+				inc_PC(registers);
+				break;
 		}
+		registers[STATUS] = NORMAL;
 	}
 	return 1;
 }
@@ -220,6 +234,7 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 	for (int i = 0; i < pmem->num_functions; i += 1) {
 		if (label == pmem->functions[i].label) {
 			if (pmem->functions[i].start == 0) {
+				registers[STATUS] = CALL_0;
 				registers[PC] = pmem->functions[i].start;
 			} else {
 				registers[PC] = pmem->functions[i].start- 1;

@@ -112,6 +112,8 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				break;
 			case CAL:
 				call(pmem, registers, ram, i.args[1]);
+				//printf("CALLLLLLLLLLLLLLLLLLLLLL ME BY YOUR NAME\n");
+				//getchar();
 				break;
 			case MOV:
 				mov(registers,
@@ -271,7 +273,7 @@ void ret(BYTE *registers, BYTE *stk) {
 
 void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	if (B_type == PTR) {
-		store(registers, ram, A_type, A, deref_ptr(registers, ram, B));
+		store(registers, ram, A_type, A, access_stk_sym(registers, ram, B));
 	} else {
 		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
 	}

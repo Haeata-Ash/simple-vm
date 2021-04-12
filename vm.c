@@ -271,7 +271,7 @@ void ret(BYTE *registers, BYTE *stk) {
 
 void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	if (B_type == PTR) {
-		store(registers, ram, A_type, A, get_stk_sym_addr(registers, deref_ptr(registers, registers, B)));
+		store(registers, ram, A_type, A, deref_ptr(registers, ram, B));
 	} else {
 		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
 	}

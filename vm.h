@@ -86,6 +86,8 @@ BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE stk_sym);
 
 BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A);
 
+void set_error(BYTE *registers, BYTE error_code);
+
 void equ(BYTE reg_addr, BYTE *ptr_reg);
 
 void print(BYTE *registers, BYTE *ram, BYTE type, BYTE A);
@@ -94,7 +96,7 @@ void not(BYTE *registers, BYTE reg_addr);
 
 void add(BYTE *registers, BYTE *ram, BYTE A, BYTE B);
 
-void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B);
+void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B);
 
 void ret(BYTE *registers, BYTE *stk);
 

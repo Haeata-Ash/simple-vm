@@ -18,6 +18,7 @@
 #define STK_OVERFLOW 3
 #define INVALID_JUMP_PC 4
 #define CALL_0 5
+#define BAD_INSTRUCTION 6
 
 
 int main(int argc, char **argv) {
@@ -80,6 +81,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 		// current instruction 
 		i = pmem->inst[registers[PC]];
+		//printf("OPCODE: %d\n", i.opcode);
 
 		// find the operation required
 		switch(i.opcode) {
@@ -100,6 +102,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				    ram, 
 				    i.args[0], 
 				    i.args[1], 
+				    i.args[2],
 				    i.args[3]
 				);
 				break;
@@ -144,12 +147,6 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	return 1;
 }
 
-// get the address of a stack symbol
-BYTE get_stk_sym_addr(BYTE *registers, BYTE stk_sym) {
-	//take start of stack frame and offset relative stk symbol
-	return registers[FP] - stk_sym;
-}
-
 // store a value in the appropriate memory region and addr
 void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 	switch (A_type) {
@@ -169,7 +166,6 @@ void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 	}
 }
 
-
 void store_reg(BYTE *registers, BYTE reg, BYTE val) {
 	registers[reg] = val;
 }
@@ -186,6 +182,13 @@ void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val) {
 		store_stk(registers, ram, addr, val);
 	}
 }
+
+// get the address of a stack symbol
+BYTE get_stk_sym_addr(BYTE *registers, BYTE stk_sym) {
+	//take start of stack frame and offset relative stk symbol
+	return registers[FP] - stk_sym;
+}
+
 
 BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
 	// get stack symbol location by offsetting from frame pointer
@@ -206,7 +209,10 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 			return access_stk_sym(registers, ram, A);
 		case REG:
 			return registers[A];
+		case VAL:
+			return A;
 		default:
+			set_error(registers, BAD_INSTRUCTION);
 			return A;
 	}
 }
@@ -260,8 +266,12 @@ void ret(BYTE *registers, BYTE *stk) {
 	}
 }
 
-void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
-	store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
+void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
+	if (B_type == PTR) {
+		store(registers, ram, A_type, A, get_stk_sym_addr(registers, deref_ptr(registers, registers, B)));
+	} else {
+		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
+	}
 }
 
 void add(BYTE *registers, BYTE *ram, BYTE A, BYTE B) {

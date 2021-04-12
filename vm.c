@@ -132,11 +132,11 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 			case CALL_0:
 				break;
 			case STK_OVERFLOW:
-				return 0;
-			case STK_EMPTY:
-				return 0;
-			case DONE:
 				return 1;
+			case STK_EMPTY:
+				return 1;
+			case DONE:
+				return 0;
 			default:
 				inc_PC(registers);
 				break;

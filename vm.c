@@ -41,9 +41,6 @@ int main(int argc, char **argv) {
 
 	// begin executing instructions
 	return run(&pmem, &ram[0], &registers[0]);
-	
-
-
 }
 
 // set all registers to 0

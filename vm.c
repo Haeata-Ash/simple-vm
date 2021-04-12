@@ -60,12 +60,20 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	int num_inst = pmem->num_inst;
 	struct Instruction i;
 
+	//find entry point
+	for (int j = 0; j < pmem->num_functions; j++) {
+		if (pmem->functions[j].label == 0) {
+			registers[PC] = pmem->functions[j].start;
+		}
+	}
+
 	// execute instruction pointed to by program counter until non left
 	while (registers[PC] < num_inst) {
 		//printf("FP: %d     || SP: %d    || PC: %d\n\n", registers[FP], registers[SP], registers[PC]);
 
 		// current instruction 
 		i = pmem->inst[registers[PC]];
+		//printf("Instruction opcode: %d\n", i.opcode);
 
 		// find the operation required
 		switch(i.opcode) {
@@ -211,14 +219,19 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 
 	for (int i = 0; i < pmem->num_functions; i += 1) {
 		if (label == pmem->functions[i].label) {
-			registers[PC] = pmem->functions[i].start - 1;
+			if (pmem->functions[i].start == 0) {
+				registers[PC] = pmem->functions[i].start;
+			} else {
+				registers[PC] = pmem->functions[i].start- 1;
+			}
+			//printf("PC found: %d\n", registers[PC]);
 		}
 	}
 }
 void ret(BYTE *registers, BYTE *stk) {
 	BYTE frame_size = registers[FP] - registers[SP];
-//	printf("###############################\n");
-//	printf("frame size: %d\n", frame_size);
+	//printf("###############################\n");
+	//printf("frame size: %d\n", frame_size);
 
 	while (frame_size > 0) {
 		pop(registers, stk);

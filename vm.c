@@ -175,7 +175,9 @@ void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val) {
 }
 
 void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val) {
-	if (offset <= registers[FP] - registers[SP]) {
+	// printf("SP: %d\n",registers[SP]);
+	// printf("Offset: %d\n", registers[FP] - registers[SP]);
+	if (offset < registers[FP] - registers[SP]) {
 		push(registers, ram, val);
 	} else {
 		BYTE addr = registers[FP] - offset;

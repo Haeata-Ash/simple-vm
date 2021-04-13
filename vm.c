@@ -3,22 +3,6 @@
 #include "vm.h"
 #include "parser.h"
 
-#define MEM_SIZE 256
-#define NUM_REG 8
-#define SP 6 // references the bottom of the stack
-#define PC 7 // references the current opcode, i.e the instruction struct
-#define FP 5 // points to start of current frame
-#define STATUS 4 // Is set to non 0 if status change occurs
-
-
-// status codes
-#define NORMAL 0
-#define DONE 1
-#define STK_EMPTY 2 
-#define STK_OVERFLOW 3
-#define INVALID_JUMP_PC 4
-#define CALL_0 5
-#define BAD_INSTRUCTION 6
 
 
 int main(int argc, char **argv) {
@@ -36,6 +20,10 @@ int main(int argc, char **argv) {
 	init_registers(&registers[0]);
 
 	//read in program to pmem
+	if (argc != 1) {
+		printf("Please give executable as cml argument.\n");
+		return EXIT_SUCCESS;
+	}
 	char *file = argv[1];
 	FILE *fp = fopen(file, "rb");
 	parse(fp, &pmem);
@@ -44,7 +32,7 @@ int main(int argc, char **argv) {
 	return run(&pmem, &ram[0], &registers[0]);
 }
 
-// set all registers to 0
+// give register initial values
 void init_registers(BYTE *registers) {
 	for (int i = 0; i < 8; i++) {
 		if (i == SP || i == FP) {
@@ -56,12 +44,17 @@ void init_registers(BYTE *registers) {
 }
 
 void print_vm_state(BYTE *registers, BYTE *ram) {
+	printf("FP: %d  || ", registers[FP]);
+	printf("SP: %d  || ", registers[SP]); 
+	printf("PC: %d\n\n", registers[PC]);
+
 	for (int i = 0; i < 4; i++) {
 		printf("REGISTER %d: %d\n", i, registers[i]);
 	}
 	for (int i = 255; i > registers[SP]; i--) {
 		printf("Stack Addr %d: %d\n", i, ram[i]);
 	}
+	printf("#######################################\n\n");
 }
 
 
@@ -81,7 +74,6 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 
 		// current instruction 
 		i = pmem->inst[registers[PC]];
-		//printf("OPCODE: %d\n", i.opcode);
 
 		// find the operation required
 		switch(i.opcode) {
@@ -112,8 +104,6 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				break;
 			case CAL:
 				call(pmem, registers, ram, i.args[1]);
-				//printf("CALLLLLLLLLLLLLLLLLLLLLL ME BY YOUR NAME\n");
-				//getchar();
 				break;
 			case MOV:
 				mov(registers,
@@ -125,11 +115,8 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				);
 				break;
 			default:
-				printf("error");
+				set_error(registers, BAD_INSTRUCTION);
 		}
-		//printf("FP: %d     || SP: %d    || PC: %d\n\n", registers[FP], registers[SP], registers[PC]);
-		//print_vm_state(registers, ram);
-		//printf("#######################################\n\n");
 
 		switch (registers[STATUS]) {
 			case CALL_0:
@@ -138,8 +125,10 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				return EXIT_FAILURE;
 			case STK_EMPTY:
 				return EXIT_FAILURE;
+			case BAD_INSTRUCTION:
+				return EXIT_FAILURE;
 			case DONE:
-				return 0;
+				return EXIT_SUCCESS;
 			default:
 				inc_PC(registers);
 				break;
@@ -149,42 +138,56 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	return 1;
 }
 
-// store a value in the appropriate memory region and addr
+// stores a value B in the appropriate memory type
 void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 	switch (A_type) {
 		case REG:
+			//storing in a register
 			store_reg(registers, A, B);
 			return;
 		case STK:
+			//storing in a symbol
 			store_stk_symbol(registers, ram, A, B);
 			return;
 		case PTR:
-			store_stk(registers, ram, access_stk_sym(registers, ram, A), B);
+			// storing in a pointer
+			store_stk(ram, access_stk_sym(registers, ram, A), B);
 			return;
 		default:
-			// ####TO DO##########
+			set_error(registers, BAD_INSTRUCTION);
 			return;
-
 	}
 }
 
+// stores a value in a register
 void store_reg(BYTE *registers, BYTE reg, BYTE val) {
+	// check if its a valid register
+	if (reg >= 8) {
+		set_error(registers, INVALID_REGISTER);
+		return;
+	}
 	registers[reg] = val;
 }
 
-void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val) {
+// stores a value at addr in RAM
+void store_stk(BYTE *ram, BYTE addr, BYTE val) {
+	// always valid addr since a BYTE 0-255
 	ram[addr] = val;
 }
 
+// stores a value in side of a symbol
 void store_stk_symbol(BYTE *registers, BYTE *ram, BYTE offset, BYTE val) {
-	//printf("SP: %d\n",registers[SP]);
-	//printf("diff: %d\n", registers[FP] - registers[SP]);
-	//printf("Offset: %d\n", offset);
+	// check if the symbol is already on the stack by comparing its offset
+	// to the current stack frame size
+	
 	if (offset >= registers[FP] - registers[SP]) {
+		//push new symbol onto stack
 		push(registers, ram, val);
+
 	} else {
+		// replace an existing symbol
 		BYTE addr = registers[FP] - offset;
-		store_stk(registers, ram, addr, val);
+		store_stk(ram, addr, val);
 	}
 }
 
@@ -194,18 +197,32 @@ BYTE get_stk_sym_addr(BYTE *registers, BYTE stk_sym) {
 	return registers[FP] - stk_sym;
 }
 
-
+// get the contents of a stack symbol
 BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
+
 	// get stack symbol location by offsetting from frame pointer
-	return ram[registers[FP] - offset];
+	BYTE addr = registers[FP] - offset;
+	if (addr <= registers[SP]) {
+		set_error(registers, BAD_ADDR);
+		return 0;
+	}
+	return ram[addr];
 }
 
 
 BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 	// get stk symbol value then use it as an address in ram
-	return ram[access_stk_sym(registers, ram, stk_sym)];
+	BYTE addr = access_stk_sym(registers, ram, stk_sym);
+	
+	// check if the addr is valid
+	if (addr <= SP) {
+		set_error(registers, BAD_ADDR);
+		return 0;
+	}
+	return ram[addr];
 }
 
+// retrieves contents of a point in memory A of type A
 BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 	switch (type) {
 		case PTR:
@@ -218,78 +235,110 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 			return A;
 		default:
 			set_error(registers, BAD_INSTRUCTION);
-			return A;
+			return 0;
 	}
 }
 
+// sets the status register to a given error code
 void set_error(BYTE *registers, BYTE error_code) {
 	registers[STATUS] = error_code;
 }
 
+// prints an error msg based on the code in the status register
 void error_msg(BYTE *registers) {
 
 }
 
+// moves a value B of type B_type to the point A in memory of type A_type
 void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	store(registers, ram, A_type, A, get_data(registers, ram, B_type, B));
 }
+
+// calls a given function by label
 void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
-	//printf("call: %d\n", label);
+
+	// push the existing frame pointer and program counter to the stack
 	push(registers, ram, registers[FP]);
 	push(registers, ram, registers[PC]);
 
+	// set the start of the new frame to the next position in the stack
 	registers[FP] = registers[SP];
 
+	// find the function label
 	for (int i = 0; i < pmem->num_functions; i += 1) {
 		if (label == pmem->functions[i].label) {
+
+			// set the program counter to the start the instruction
 			if (pmem->functions[i].start == 0) {
+				// special case where the first instruction is 
+				// at position 0 and the PC should not be
+				// incremented
 				registers[STATUS] = CALL_0;
 				registers[PC] = pmem->functions[i].start;
+
 			} else {
 				registers[PC] = pmem->functions[i].start- 1;
 			}
-			//printf("PC found: %d\n", registers[PC]);
+		// invalid label
+		} else {
+			set_error(registers, BAD_INSTRUCTION);
 		}
 	}
 }
-void ret(BYTE *registers, BYTE *stk) {
-	BYTE frame_size = registers[FP] - registers[SP];
-	//printf("###############################\n");
-	//printf("frame size: %d\n", frame_size);
 
+// returns from a function
+void ret(BYTE *registers, BYTE *stk) {
+	// find current frames size
+	BYTE frame_size = registers[FP] - registers[SP];
+
+	// remove all symbols
 	while (frame_size > 0) {
 		pop(registers, stk);
 		frame_size -= 1;
 	}
-
+	
+	// set PC to next instruction and FP to start of the frame that called
 	registers[PC] = pop(registers, stk);
 	registers[FP] = pop(registers, stk);
-	//printf("old pc: %d\n", registers[PC]);
-	//printf("old FP: %d\n", registers[FP]);
+
+	// if the stack empty flag is given after the previous pops,
+	// we have returned from function 0
 	if (registers[STATUS] == STK_EMPTY) {
 		registers[STATUS] = DONE;
 	}
 }
 
+// stores the address of B in A
 void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
+
+	// dereferencing the pointer and finding its address cancel out
 	if (B_type == PTR) {
 		store(registers, ram, A_type, A, access_stk_sym(registers, ram, B));
-	} else {
+
+	// get the address of the stk symbol B
+	} else if (B_type == STK){
 		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
+	} else {
+		set_error(registers, BAD_INSTRUCTION);
 	}
 }
 
+// adds to registers together and stores in register A
 void add(BYTE *registers, BYTE *ram, BYTE A, BYTE B) {
 	store_reg(registers, A, registers[A] + registers[B]);
  }
+
+// prints the contents of A where A can be any type
 void print(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 	printf("%d\n", get_data(registers, ram, type, A));
 }
 
+// bitwise not operation on a register
 void not(BYTE *registers, BYTE reg_addr) {
 	store_reg(registers, reg_addr, ~(registers[reg_addr]));
 }
 
+// checks if a register is equal to 0
 void equ(BYTE reg_addr, BYTE *ptr_reg) {
 	if (ptr_reg[reg_addr] == 0) {
 		ptr_reg[reg_addr] = 0x01;
@@ -298,8 +347,9 @@ void equ(BYTE reg_addr, BYTE *ptr_reg) {
 	}
 }
 
-
+// increments the Program Counter
 void inc_PC(BYTE *registers) {
+
 	if (registers[PC] == 255) {
 		registers[STATUS] = DONE;
 	} else {
@@ -307,7 +357,9 @@ void inc_PC(BYTE *registers) {
 	}
 }
 
+// increments the stack pointer (stk empty when stack pointer set to 255)
 void inc_SP(BYTE *registers) {
+	// STK is empty
 	if (registers[SP] == MEM_SIZE - 1) {
 		set_error(registers, STK_EMPTY);
 
@@ -316,29 +368,35 @@ void inc_SP(BYTE *registers) {
 	}
 }
 
+// decrement stack (grows stack)
 void dec_SP(BYTE *registers) {
+	// stack is already full
 	if (registers[SP] == 0) {
 		set_error(registers, STK_OVERFLOW);
 	}
+
 	else {
 		registers[SP] -= 1;
 	}
 }
 
+// set the program counter to jump program
 void set_PC(BYTE num_inst, BYTE *registers, BYTE new_pc) {
+	// check that instruction exists
 	if (registers[PC] >= num_inst) {
-		set_error(registers, INVALID_JUMP_PC);
+		set_error(registers, INVALID_JUMP);
 		return;
 	}
 	registers[PC] = new_pc;
 }
 
+// remove element from stack
 BYTE pop(BYTE *registers, BYTE *ram) {
 	inc_SP(registers);
 	return ram[registers[SP]];
 }
 
-
+// add element to stack
 void push(BYTE *registers, BYTE *ram, BYTE val) {
 	ram[registers[SP]] = val;
 	dec_SP(registers);

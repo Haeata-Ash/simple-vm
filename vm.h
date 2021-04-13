@@ -2,47 +2,93 @@
 #define VM_H_
 
 /* TYPES */
-#define VAL 0x00
-#define REG 0x01
-#define STK 0x02
-#define PTR 0x03
+enum types {
+	VAL,
+	REG,
+	STK,
+	PTR,
+};
 
 /*LENGTHS IN BITS */
-#define LEN_TYPE 2
-#define LEN_OPCODE 3
-#define LEN_VALUE 8
-#define LEN_REG 3
-#define LEN_STK 5
-#define LEN_PRT 5
-#define LEN_INST 5
-#define LEN_LABEL 3
+enum {
+
+	LEN_TYPE = 2,
+	LEN_OPCODE = 3,
+	LEN_VALUE = 8,
+	LEN_REG = 3,
+	LEN_STK = 5,
+	LEN_PRT = 5,
+	LEN_INST = 5,
+	LEN_LABEL = 3,
+};
 
 /* OPCODES VALUE*/
-#define MOV 0x00
-#define CAL 0x01
-#define RET 0x02
-#define REF 0x03
-#define ADD 0x04
-#define PRINT 0x05
-#define NOT 0x06
-#define EQU 0x07
+enum opcodes {
+	MOV,
+	CAL,
+	RET,
+	REF,
+	ADD,
+	PRINT,
+	NOT,
+	EQU,
+};
 
 /* NUMBER OF OPERATION ARGUMENTS */
-#define N_MOV 2
-#define N_CAL 1
-#define N_RET 0
-#define N_REF 2
-#define N_ADD 2
-#define N_PRINT 1
-#define N_NOT 1
-#define N_EQU 1
+enum op_arg_len {
+	N_MOV = 2,
+	N_CAL = 1,
+	N_RET = 0,
+	N_REF = 2,
+	N_ADD = 2,
+	N_PRINT = 1,
+	N_NOT = 1,
+	N_EQU = 1,
+};
 
-
+// buffer size based on encoding
 #define BUF_SIZE 776
+
+// max instructions that can be encoded in 5 bits
 #define MAX_INST 32
+
+// max functions that can be encoded in 3 bits
 #define MAX_FUNC 8
 
+// ram size 2^8 byte addressable
+#define MEM_SIZE 256
+
+// number of registers
+#define NUM_REG 8
+
+// stack pointer register index
+#define SP 6 
+
+// program counter register index
+#define PC 7 
+
+// frame pointer register index
+#define FP 5 
+
+ // status register index
+#define STATUS 4
+
+// create BYTE for readability
 #define BYTE unsigned char
+
+
+// status codes that the status register will be set to
+enum status_codes {
+	NORMAL,
+	DONE,
+	STK_EMPTY,
+	STK_OVERFLOW,
+	INVALID_JUMP,
+	CALL_0,
+	BAD_INSTRUCTION,
+	INVALID_REGISTER,
+	BAD_ADDR,
+};
 
 struct Instruction {
 	int opcode;
@@ -70,7 +116,7 @@ void init_registers(BYTE *registers);
 
 void store_reg(BYTE *registers, BYTE reg, BYTE val);
 
-void store_stk(BYTE *registers, BYTE *ram, BYTE addr, BYTE val);
+void store_stk(BYTE *ram, BYTE addr, BYTE val);
 
 void dec_SP(BYTE *registers);
 

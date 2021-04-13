@@ -20,10 +20,6 @@ int main(int argc, char **argv) {
 	init_registers(&registers[0]);
 
 	//read in program to pmem
-	if (argc != 1) {
-		printf("Please give executable as cml argument.\n");
-		return EXIT_SUCCESS;
-	}
 	char *file = argv[1];
 	FILE *fp = fopen(file, "rb");
 	parse(fp, &pmem);

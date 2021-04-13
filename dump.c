@@ -10,10 +10,6 @@ int main(int argc, char **argv) {
 	BYTE buf[BUF_SIZE];
 
 	// check they gave a cml arg
-	if (argc != 1) {
-		printf("Please give executable as cml argument.\n");
-		return EXIT_SUCCESS;
-	}
 
 	// read file into buffer
 	char *file = argv[1];

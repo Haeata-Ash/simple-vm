@@ -276,10 +276,7 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 				registers[PC] = pmem->functions[i].start- 1;
 			}
 		// invalid label
-		} else {
-			printf("adfjsdkfjhsdkj\n");
-			set_error(registers, BAD_INSTRUCTION);
-		}
+		} 
 	}
 }
 
@@ -313,8 +310,10 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 		store(registers, ram, A_type, A, access_stk_sym(registers, ram, B));
 
 	// get the address of the stk symbol B
-	} else {
+	} else if (B_type == STK){
 		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
+	} else {
+		set_error(registers, BAD_INSTRUCTION);
 	}
 }
 

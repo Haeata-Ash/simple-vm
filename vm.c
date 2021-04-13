@@ -66,7 +66,6 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	struct Instruction i;
 
 	//find entry point
-	
 	for (int j = 0; j < pmem->num_functions; j++) {
 		if (pmem->functions[j].label == 0) {
 			registers[PC] = pmem->functions[j].start;
@@ -145,6 +144,9 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				return EXIT_FAILURE;
 			case UNDEFINED_SYMBOL:
 				error_msg(UNDEFINED_SYMBOL);
+				return EXIT_FAILURE;
+			case INVALID_JUMP:
+				error_msg(INVALID_JUMP);
 				return EXIT_FAILURE;
 			case DONE:
 				return EXIT_SUCCESS;

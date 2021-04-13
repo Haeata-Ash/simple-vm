@@ -50,13 +50,11 @@ void validate_label(struct PMEM *pmem) {
 
 	if (new_f.label >= 8) {
 		fprintf(stderr, "Bad instruction\n");
-		//error_msg(BAD_INSTRUCTION);
 		exit(EXIT_FAILURE);
 	} 
 	for (int i = 0; i < num_f - 1; i++) {
 		if (new_f.label == pmem->functions[i].label) {
 			fprintf(stderr, "Bad instruction\n");
-			//error_msg(BAD_INSTRUCTION);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -218,6 +216,8 @@ int get_arg_len(BYTE type) {
 		case (PTR):
 			return LEN_PRT;
 		default:
+			fprintf(stderr, "Bad instruction\n");
+			exit(EXIT_FAILURE);
 			return 0x00;
 	}
 }
@@ -242,7 +242,8 @@ int get_num_args(BYTE op) {
 		case (EQU):
 			return N_EQU;
 		default:
-			printf("num args");
+			fprintf(stderr, "Bad instruction\n");
+			exit(EXIT_FAILURE);
 			return 0x00;
 	}
 }
@@ -275,7 +276,6 @@ void output_opcode(int op) {
 			printf("%s", S_EQU);
 			return;
 		default:
-			printf("error");
 			return;
 	}
 }
@@ -296,7 +296,6 @@ void output_type(BYTE type) {
 			printf("%s", S_PTR);
 			return;
 		default:
-			printf("error");
 			return;
 	}
 }

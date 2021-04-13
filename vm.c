@@ -130,26 +130,34 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 		switch (registers[STATUS]) {
 			case CALL_0:
 				break;
+
 			case STK_OVERFLOW:
 				error_msg(STK_OVERFLOW);
 				return EXIT_FAILURE;
+
 			case STK_EMPTY:
 				error_msg(STK_EMPTY);
 				return EXIT_FAILURE;
+
 			case BAD_INSTRUCTION:
 				error_msg(BAD_INSTRUCTION);
 				return EXIT_FAILURE;
+
 			case BAD_ADDR:
 				error_msg(BAD_ADDR);
 				return EXIT_FAILURE;
+
 			case UNDEFINED_SYMBOL:
 				error_msg(UNDEFINED_SYMBOL);
 				return EXIT_FAILURE;
+
 			case INVALID_JUMP:
 				error_msg(INVALID_JUMP);
 				return EXIT_FAILURE;
+
 			case DONE:
 				return EXIT_SUCCESS;
+
 			default:
 				inc_PC(registers);
 				break;

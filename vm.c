@@ -121,8 +121,8 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				return EXIT_FAILURE;
 			case STK_EMPTY:
 				return EXIT_FAILURE;
-			case BAD_INSTRUCTION:
-				return EXIT_FAILURE;
+			//case BAD_INSTRUCTION:
+			//	return EXIT_FAILURE;
 			case DONE:
 				return EXIT_SUCCESS;
 			default:
@@ -211,10 +211,10 @@ BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 	BYTE addr = access_stk_sym(registers, ram, stk_sym);
 	
 	// check if the addr is valid
-	//if (addr <= SP) {
-	//	set_error(registers, BAD_ADDR);
-	//	return 0;
-	//}
+	if (addr <= SP) {
+		set_error(registers, BAD_ADDR);
+		return 0;
+	}
 	return ram[addr];
 }
 
@@ -231,7 +231,7 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 			return A;
 		default:
 			set_error(registers, BAD_INSTRUCTION);
-			return 0;
+			return A;
 	}
 }
 

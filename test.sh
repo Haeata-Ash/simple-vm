@@ -57,5 +57,8 @@ rm err
 diff err $DIR/bad_move.out && printf "[passed] %s\n" bad_move || printf "\n\n[failed] %s\n" bad_move
 rm err
 
+./vm_x2017 $DIR/bad_call.in 2> err
+diff err $DIR/bad_call.out && printf "[passed] %s\n" bad_call || printf "\n\n[failed] %s\n" bad_call 
+rm err
 echo
-echo "Finished running 4 tests!"
+echo "Finished running 5 tests!"

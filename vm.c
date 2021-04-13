@@ -155,6 +155,10 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				error_msg(INVALID_JUMP);
 				return EXIT_FAILURE;
 
+			case BAD_CALL:
+				error_msg(BAD_CALL);
+				return EXIT_FAILURE;
+
 			case DONE:
 				return EXIT_SUCCESS;
 
@@ -300,6 +304,9 @@ void error_msg(BYTE code) {
 		case UNDEFINED_SYMBOL:
 			fprintf(stderr, "Accessed undefined symbol\n");
 			break;
+		case BAD_CALL:
+			fprintf(stderr, "Function does not exist\n");
+			break;
 		default:
 			fprintf(stdin, "Unspecified error occured\n");
 
@@ -337,8 +344,10 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 			} else {
 				registers[PC] = pmem->functions[i].start- 1;
 			}
+			return;
 		} 
 	}
+	set_error(registers, BAD_CALL);
 }
 
 // returns from a function

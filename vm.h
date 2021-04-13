@@ -90,6 +90,7 @@ enum status_codes {
 	BAD_ADDR,
 	NO_ENTRY_POINT,
 	UNDEFINED_SYMBOL,
+	BAD_CALL,
 };
 
 struct Instruction {

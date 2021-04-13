@@ -1,0 +1,10 @@
+FUNC LABEL 0
+    MOV STK A VAL 19 // A = 19
+    REF STK B STK A  // B = &A so B = 255
+    REF PTR B STK B  // *B = &B  or A = &B so A = 254
+    REF STK B STK B  // B = &B so B = 254
+    MOV REG 0 STK A // REG 0 = A = &B
+    MOV REG 1 STK B // REG 1 = B = &B
+    PRINT REG 0 // 254
+    PRINT REG 1 // 254
+    RET

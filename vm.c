@@ -198,10 +198,10 @@ BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
 
 	// get stack symbol location by offsetting from frame pointer
 	BYTE addr = registers[FP] - offset;
-	//if (addr <= registers[SP]) {
-	//	set_error(registers, BAD_ADDR);
-	//	return 0;
-	//}
+	if (addr <= registers[SP]) {
+		set_error(registers, BAD_ADDR);
+		return 0;
+	}
 	return ram[addr];
 }
 

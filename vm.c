@@ -158,10 +158,10 @@ void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 // stores a value in a register
 void store_reg(BYTE *registers, BYTE reg, BYTE val) {
 	// check if its a valid register
-	//if (reg >= 8) {
-	//	set_error(registers, INVALID_REGISTER);
-	//	return;
-	//}
+	if (reg >= 8) {
+		set_error(registers, INVALID_REGISTER);
+		return;
+	}
 	registers[reg] = val;
 }
 

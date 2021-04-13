@@ -121,8 +121,8 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				return EXIT_FAILURE;
 			case STK_EMPTY:
 				return EXIT_FAILURE;
-			//case BAD_INSTRUCTION:
-			//	return EXIT_FAILURE;
+			case BAD_INSTRUCTION:
+				return EXIT_FAILURE;
 			case DONE:
 				return EXIT_SUCCESS;
 			default:

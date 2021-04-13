@@ -20,6 +20,10 @@ int main(int argc, char **argv) {
 	init_registers(&registers[0]);
 
 	//read in program to pmem
+	if (argc != 2) {
+		fprintf(stderr, "Please provide file as command line argument\n");
+		return EXIT_FAILURE;
+	}
 	char *file = argv[1];
 	FILE *fp = fopen(file, "rb");
 	parse(fp, &pmem);
@@ -121,7 +125,6 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				);
 				break;
 			default:
-				printf("RUNNING\n");
 				set_error(registers, BAD_INSTRUCTION);
 		}
 
@@ -136,6 +139,12 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				return EXIT_FAILURE;
 			case BAD_INSTRUCTION:
 				error_msg(BAD_INSTRUCTION);
+				return EXIT_FAILURE;
+			case BAD_ADDR:
+				error_msg(BAD_ADDR);
+				return EXIT_FAILURE;
+			case UNDEFINED_SYMBOL:
+				error_msg(UNDEFINED_SYMBOL);
 				return EXIT_FAILURE;
 			case DONE:
 				return EXIT_SUCCESS;
@@ -213,7 +222,7 @@ BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
 	// get stack symbol location by offsetting from frame pointer
 	BYTE addr = registers[FP] - offset;
 	if (addr <= registers[SP]) {
-		set_error(registers, BAD_ADDR);
+		set_error(registers, UNDEFINED_SYMBOL);
 		return 0;
 	}
 	return ram[addr];
@@ -227,7 +236,7 @@ BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 	// check if the addr is valid
 	if (addr <= SP) {
 		set_error(registers, BAD_ADDR);
-		return 0;
+		return EXIT_FAILURE;
 	}
 	return ram[addr];
 }
@@ -244,7 +253,6 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 		case VAL:
 			return A;
 		default:
-			printf("getting data");
 			set_error(registers, BAD_INSTRUCTION);
 			return A;
 	}
@@ -278,6 +286,9 @@ void error_msg(BYTE code) {
 			break;
 		case STK_EMPTY:
 			fprintf(stderr, "Underflow?\n");
+			break;
+		case UNDEFINED_SYMBOL:
+			fprintf(stderr, "Accessed undefined symbol\n");
 			break;
 		default:
 			fprintf(stdin, "Unspecified error occured\n");
@@ -353,7 +364,6 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	} else if (B_type == STK){
 		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
 	} else {
-		printf("REFFF\n");
 		set_error(registers, BAD_INSTRUCTION);
 	}
 }

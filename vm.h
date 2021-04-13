@@ -89,6 +89,7 @@ enum status_codes {
 	INVALID_REGISTER,
 	BAD_ADDR,
 	NO_ENTRY_POINT,
+	UNDEFINED_SYMBOL,
 };
 
 struct Instruction {

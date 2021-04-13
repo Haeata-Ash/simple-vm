@@ -49,14 +49,15 @@ void validate_label(struct PMEM *pmem) {
 	struct Function new_f = pmem->functions[num_f - 1];
 
 	if (new_f.label >= 8) {
-		printf("lavel\n");
+		fprintf(stderr, "Bad instruction\n");
 		//error_msg(BAD_INSTRUCTION);
 		exit(EXIT_FAILURE);
 	} 
 	for (int i = 0; i < num_f - 1; i++) {
 		if (new_f.label == pmem->functions[i].label) {
+			fprintf(stderr, "Bad instruction\n");
 			//error_msg(BAD_INSTRUCTION);
-			//exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 		}
 	}
 }

@@ -10,6 +10,11 @@ int main(int argc, char **argv) {
 	BYTE buf[BUF_SIZE];
 
 	// check they gave a cml arg
+	if (argc != 2) {
+		fprintf(stderr, "Please provide file as command line argument\n");
+		return EXIT_FAILURE;
+	}
+
 
 	// read file into buffer
 	char *file = argv[1];

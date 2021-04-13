@@ -88,6 +88,7 @@ enum status_codes {
 	BAD_INSTRUCTION,
 	INVALID_REGISTER,
 	BAD_ADDR,
+	NO_ENTRY_POINT,
 };
 
 struct Instruction {
@@ -153,4 +154,6 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label);
 void mov(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B);
 
 int run(struct PMEM *pmem, BYTE *ram, BYTE *registers);
+
+void error_msg(BYTE code);
 #endif

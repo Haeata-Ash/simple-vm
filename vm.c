@@ -33,7 +33,10 @@ void init_registers(BYTE *registers) {
 	for (int i = 0; i < 8; i++) {
 		if (i == SP || i == FP) {
 			registers[i] = 0xFF;
-		} else {
+		} else if (i == STATUS) {
+			registers[i] = NO_ENTRY_POINT;
+		}
+		else {
 			registers[i] = 0;
 		}
 	}
@@ -59,10 +62,17 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	struct Instruction i;
 
 	//find entry point
+	
 	for (int j = 0; j < pmem->num_functions; j++) {
 		if (pmem->functions[j].label == 0) {
 			registers[PC] = pmem->functions[j].start;
+			set_error(registers, NORMAL);
 		}
+	}
+
+	if (registers[STATUS] == NO_ENTRY_POINT) {
+		error_msg(NO_ENTRY_POINT);
+		return EXIT_FAILURE;
 	}
 
 	// execute instruction pointed to by program counter until non left
@@ -111,6 +121,7 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 				);
 				break;
 			default:
+				printf("RUNNING\n");
 				set_error(registers, BAD_INSTRUCTION);
 		}
 
@@ -118,10 +129,13 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 			case CALL_0:
 				break;
 			case STK_OVERFLOW:
+				error_msg(STK_OVERFLOW);
 				return EXIT_FAILURE;
 			case STK_EMPTY:
+				error_msg(STK_EMPTY);
 				return EXIT_FAILURE;
 			case BAD_INSTRUCTION:
+				error_msg(BAD_INSTRUCTION);
 				return EXIT_FAILURE;
 			case DONE:
 				return EXIT_SUCCESS;
@@ -230,6 +244,7 @@ BYTE get_data(BYTE *registers, BYTE *ram, BYTE type, BYTE A) {
 		case VAL:
 			return A;
 		default:
+			printf("getting data");
 			set_error(registers, BAD_INSTRUCTION);
 			return A;
 	}
@@ -240,8 +255,34 @@ void set_error(BYTE *registers, BYTE error_code) {
 	registers[STATUS] = error_code;
 }
 
-// prints an error msg based on the code in the status register
-void error_msg(BYTE *registers) {
+// prints an error msg based on the code 
+void error_msg(BYTE code) {
+	switch (code) {
+		case STK_OVERFLOW:
+			fprintf(stderr, "Stack overflow\n");
+			break;
+		case INVALID_JUMP:
+			fprintf(stderr, "Jumped to invalid program counter value\n");
+			break;
+		case BAD_INSTRUCTION:
+			fprintf(stderr, "Bad instructions\n");
+			break;
+		case INVALID_REGISTER:
+			fprintf(stderr, "Invalid register\n");
+			break;
+		case BAD_ADDR:
+			fprintf(stderr, "Accessed invalid memory address\n");
+			break;
+		case NO_ENTRY_POINT:
+			fprintf(stderr, "No entry point in program\n");
+			break;
+		case STK_EMPTY:
+			fprintf(stderr, "Underflow?\n");
+			break;
+		default:
+			fprintf(stdin, "Unspecified error occured\n");
+
+	}
 
 }
 
@@ -312,6 +353,7 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 	} else if (B_type == STK){
 		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
 	} else {
+		printf("REFFF\n");
 		set_error(registers, BAD_INSTRUCTION);
 	}
 }

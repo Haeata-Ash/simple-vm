@@ -32,12 +32,32 @@ void parse(FILE *fp, struct PMEM *pmem) {
 
 	// read in each function and store in pmem along with instructions
 	int num_f = 0;
+
 	while (index > 0) {
 		num_f = pmem->num_functions;
 
 		// read function
 		pmem->functions[num_f] = read_function(&buf[0], &index, &bit_cursor, pmem);
 		pmem->num_functions += 1;
+		validate_label(pmem);
+	}
+}
+
+// validates labels + label uniqueness
+void validate_label(struct PMEM *pmem) { 
+	int num_f = pmem->num_functions;
+	struct Function new_f = pmem->functions[num_f - 1];
+
+	if (new_f.label >= 8) {
+		printf("lavel\n");
+		//error_msg(BAD_INSTRUCTION);
+		exit(EXIT_FAILURE);
+	} 
+	for (int i = 0; i < num_f - 1; i++) {
+		if (new_f.label == pmem->functions[i].label) {
+			//error_msg(BAD_INSTRUCTION);
+			//exit(EXIT_FAILURE);
+		}
 	}
 }
 

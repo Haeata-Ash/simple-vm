@@ -26,4 +26,6 @@ void add_stk_symbol(struct Function *f, unsigned char symbol);
 
 void print_stk(int val);
 
+void validate_label(struct PMEM *pmem);
+
 #endif

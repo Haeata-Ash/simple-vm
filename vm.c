@@ -158,10 +158,10 @@ void store(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B) {
 // stores a value in a register
 void store_reg(BYTE *registers, BYTE reg, BYTE val) {
 	// check if its a valid register
-	if (reg >= 8) {
-		set_error(registers, INVALID_REGISTER);
-		return;
-	}
+	//if (reg >= 8) {
+	//	set_error(registers, INVALID_REGISTER);
+	//	return;
+	//}
 	registers[reg] = val;
 }
 
@@ -198,10 +198,10 @@ BYTE access_stk_sym(BYTE *registers, BYTE *ram, BYTE offset) {
 
 	// get stack symbol location by offsetting from frame pointer
 	BYTE addr = registers[FP] - offset;
-	if (addr <= registers[SP]) {
-		set_error(registers, BAD_ADDR);
-		return 0;
-	}
+	//if (addr <= registers[SP]) {
+	//	set_error(registers, BAD_ADDR);
+	//	return 0;
+	//}
 	return ram[addr];
 }
 
@@ -211,10 +211,10 @@ BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 	BYTE addr = access_stk_sym(registers, ram, stk_sym);
 	
 	// check if the addr is valid
-	if (addr <= SP) {
-		set_error(registers, BAD_ADDR);
-		return 0;
-	}
+	//if (addr <= SP) {
+	//	set_error(registers, BAD_ADDR);
+	//	return 0;
+	//}
 	return ram[addr];
 }
 
@@ -277,6 +277,7 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 			}
 		// invalid label
 		} else {
+			printf("adfjsdkfjhsdkj\n");
 			set_error(registers, BAD_INSTRUCTION);
 		}
 	}
@@ -312,10 +313,8 @@ void ref(BYTE *registers, BYTE *ram, BYTE A_type, BYTE A, BYTE B_type, BYTE B) {
 		store(registers, ram, A_type, A, access_stk_sym(registers, ram, B));
 
 	// get the address of the stk symbol B
-	} else if (B_type == STK){
-		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
 	} else {
-		set_error(registers, BAD_INSTRUCTION);
+		store(registers, ram, A_type, A, get_stk_sym_addr(registers, B));
 	}
 }
 

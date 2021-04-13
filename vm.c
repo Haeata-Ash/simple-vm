@@ -211,10 +211,10 @@ BYTE deref_ptr(BYTE *registers, BYTE *ram, BYTE stk_sym) {
 	BYTE addr = access_stk_sym(registers, ram, stk_sym);
 	
 	// check if the addr is valid
-	//if (addr <= SP) {
-	//	set_error(registers, BAD_ADDR);
-	//	return 0;
-	//}
+	if (addr <= SP) {
+		set_error(registers, BAD_ADDR);
+		return 0;
+	}
 	return ram[addr];
 }
 
@@ -275,7 +275,6 @@ void call(struct PMEM *pmem, BYTE *registers, BYTE *ram, BYTE label) {
 			} else {
 				registers[PC] = pmem->functions[i].start- 1;
 			}
-		// invalid label
 		} 
 	}
 }

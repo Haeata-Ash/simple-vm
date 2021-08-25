@@ -2,6 +2,9 @@
 #include "vm.h"
 #include "parser.h"
 
+#define ARG_LEN 2
+#define ARG_LEN_ERR_MSG "Please provide file as command line argument\n"
+
 int main(int argc, char **argv) {
 	//initialise pmem
 	struct PMEM pmem;
@@ -10,8 +13,8 @@ int main(int argc, char **argv) {
 	BYTE buf[BUF_SIZE];
 
 	// check they gave a cml arg
-	if (argc != 2) {
-		fprintf(stderr, "Please provide file as command line argument\n");
+	if (argc != ARG_LEN) {
+		fprintf(stderr, ARG_LEN_ERR_MSG);
 		return EXIT_FAILURE;
 	}
 

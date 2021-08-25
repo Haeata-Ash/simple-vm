@@ -16,4 +16,4 @@ run_tests: vm_x2017
 	bash test.sh
 
 clean:
-	rm vm_x2017 objdump_x2017
+	rm -f vm_x2017 objdump_x2017

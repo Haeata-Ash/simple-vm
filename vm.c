@@ -3,6 +3,8 @@
 #include "vm.h"
 #include "parser.h"
 
+#define ARG_LEN 2
+#define ARG_LEN_ERR_MSG "Please provide file as command line argument\n"
 
 
 int main(int argc, char **argv) {
@@ -20,8 +22,8 @@ int main(int argc, char **argv) {
 	init_registers(&registers[0]);
 
 	//read in program to pmem
-	if (argc != 2) {
-		fprintf(stderr, "Please provide file as command line argument\n");
+	if (argc != ARG_LEN) {
+		fprintf(stderr, ARG_LEN_ERR_MSG);
 		return EXIT_FAILURE;
 	}
 	char *file = argv[1];
@@ -35,17 +37,23 @@ int main(int argc, char **argv) {
 // give register initial values
 void init_registers(BYTE *registers) {
 	for (int i = 0; i < 8; i++) {
+
+		// set stack and frame pointer registers to 255
 		if (i == SP || i == FP) {
 			registers[i] = 0xFF;
+
+		// set the status registers initial value
 		} else if (i == STATUS) {
 			registers[i] = NO_ENTRY_POINT;
 		}
+		// all other registers initialized to 0
 		else {
 			registers[i] = 0;
 		}
 	}
 }
 
+// prints the vm's internal state in human readable format for debugging
 void print_vm_state(BYTE *registers, BYTE *ram) {
 	printf("FP: %d  || ", registers[FP]);
 	printf("SP: %d  || ", registers[SP]); 
@@ -65,20 +73,21 @@ int run(struct PMEM *pmem, BYTE *ram, BYTE *registers) {
 	int num_inst = pmem->num_inst;
 	struct Instruction i;
 
-	//find entry point
+	//find program entry point
 	for (int j = 0; j < pmem->num_functions; j++) {
 		if (pmem->functions[j].label == 0) {
 			registers[PC] = pmem->functions[j].start;
 			set_error(registers, NORMAL);
 		}
 	}
-
+	
+	// check that the program has a valid entry point
 	if (registers[STATUS] == NO_ENTRY_POINT) {
 		error_msg(NO_ENTRY_POINT);
 		return EXIT_FAILURE;
 	}
 
-	// execute instruction pointed to by program counter until non left
+	// execute instruction pointed to by program counter until none left
 	while (registers[PC] < num_inst) {
 
 		// current instruction 
